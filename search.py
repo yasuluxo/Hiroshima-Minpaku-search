@@ -1,3 +1,4 @@
+
 import os
 import re
 import json
@@ -6,90 +7,86 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 import mailer
 
-# ===========================
-# 広島 民泊物件ハンター Ver3
-# ===========================
+# ==========================
+# 広島 民泊物件ハンター Ver4
+# ==========================
 
 HEADERS = {
-    "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-}
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 Chrome/138.0 Safari/537.36"
+    )
 }
 
 AREAS = [
     {
-        "name":"中区",
-        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34101"
+        "name": "中区",
+        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34101",
     },
     {
-        "name":"南区",
-        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34103"
+        "name": "南区",
+        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34103",
     },
     {
-        "name":"西区",
-        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34104"
+        "name": "西区",
+        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34104",
     },
     {
-        "name":"東区",
-        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34102"
-    }
+        "name": "東区",
+        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34102",
+    },
 ]
 
 SEEN_FILE = "seen.json"
 PRICE_FILE = "price_history.json"
 
-# ------------------------------
 
-def load(path):
+# -------------------------
+# JSON
+# -------------------------
 
+def load_json(path):
     if os.path.exists(path):
-        with open(path,"r",encoding="utf8") as f:
+        with open(path, "r", encoding="utf8") as f:
             return json.load(f)
-
     return {}
 
-def save(path,obj):
 
-    with open(path,"w",encoding="utf8") as f:
-        json.dump(obj,f,ensure_ascii=False,indent=2)
+def save_json(path, data):
+    with open(path, "w", encoding="utf8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ------------------------------
+
+# -------------------------
+# Utility
+# -------------------------
 
 def get_price(text):
+    m = re.search(r"([0-9.]+)", text)
+    if not m:
+        return 999
+    return float(m.group(1))
 
-    m = re.search(r"([0-9.]+)",text)
-
-    if m:
-        return float(m.group(1))
-
-    return 999
-
-# ------------------------------
 
 def get_company(title):
+    m = re.search(r"(株式会社.+?|.+?不動産)", title)
+    return m.group(1) if m else ""
 
-    m = re.search(r"(株式会社.+?|.+?不動産)",title)
 
-    if m:
-        return m.group(1)
-
-    return ""
-
-# ------------------------------
+# -------------------------
+# 民泊スコア
+# -------------------------
 
 def judge(prop):
-
     score = 0
-
-    reasons=[]
+    reasons = []
 
     text = (
-        prop["title"] +
-        prop["layout"] +
-        prop["address"]
+        prop["title"]
+        + " "
+        + prop["layout"]
+        + " "
+        + prop["address"]
     )
 
     if "戸建" in text:
@@ -120,32 +117,35 @@ def judge(prop):
         score += 2
         reasons.append("低家賃")
 
-    if prop["area"] in ["中区","南区"]:
+    if prop["area"] in ["中区", "南区"]:
         score += 1
         reasons.append("人気エリア")
 
-    stars = "★"*min(score,5) + "☆"*(5-min(score,5))
+    score = min(score, 5)
 
-    return stars,"・".join(reasons)
+    stars = "★" * score + "☆" * (5 - score)
 
-# ------------------------------
+    return stars, "・".join(reasons)
+
+
+# -------------------------
+# SUUMO取得
+# -------------------------
 
 def scrape(area):
+    print("検索:", area["name"])
 
-    print("検索:",area["name"])
+    r = requests.get(area["url"], headers=HEADERS, timeout=20)
+    r.raise_for_status()
 
-    r = requests.get(area["url"],headers=HEADERS,timeout=20)
-
-    soup = BeautifulSoup(r.text,"lxml")
+    soup = BeautifulSoup(r.text, "lxml")
 
     cards = soup.select(".cassetteitem")
 
-    results=[]
+    results = []
 
     for c in cards:
-
         try:
-
             title = c.select_one(
                 ".cassetteitem_content-title"
             ).get_text(strip=True)
@@ -166,127 +166,109 @@ def scrape(area):
                 ".cassetteitem_menseki"
             )[0].get_text(strip=True)
 
-            href = c.select_one(
-                ".js-cassette_link_href"
-            )["href"]
+            link = c.select_one(".js-cassette_link_href")["href"]
 
-            if href.startswith("/"):
-                href = "https://suumo.jp"+href
+            if link.startswith("/"):
+                link = "https://suumo.jp" + link
 
-            uid = href.split("/")[-2]
+            uid = link.split("/")[-2]
 
             prop = {
-
-                "id":uid,
-
-                "site":"SUUMO",
-
-                "area":area["name"],
-
-                "title":title,
-
-                "address":address,
-
-                "rent":rent,
-
-                "price":get_price(rent),
-
-                "layout":layout,
-
-                "size":size,
-
-                "company":get_company(title),
-
-                "url":href,
-
-                "map":"https://maps.google.com/?q="+quote(address)
-
+                "id": uid,
+                "site": "SUUMO",
+                "area": area["name"],
+                "title": title,
+                "address": address,
+                "rent": rent,
+                "price": get_price(rent),
+                "layout": layout,
+                "size": size,
+                "company": get_company(title),
+                "url": link,
+                "map": "https://maps.google.com/?q="
+                + quote(address),
             }
 
-            star,comment = judge(prop)
+            star, comment = judge(prop)
 
-            prop["score"]=star
-
-            prop["comment"]=comment
+            prop["score"] = star
+            prop["comment"] = comment
 
             results.append(prop)
 
         except Exception:
-
             continue
 
     return results
 
-# ------------------------------
+
+# -------------------------
+# 全エリア取得
+# -------------------------
 
 def collect():
-
-    all_props=[]
+    properties = []
 
     for area in AREAS:
-        all_props.extend(scrape(area))
+        properties.extend(scrape(area))
 
-    print(f"取得件数：{len(all_props)}")
+    print("取得件数:", len(properties))
 
-    return all_props
+    return properties
 
-# ------------------------------
+
+# -------------------------
+# 新着・値下
+# -------------------------
 
 def detect(properties):
+    seen = load_json(SEEN_FILE)
+    prices = load_json(PRICE_FILE)
 
-    seen = load(SEEN_FILE)
-
-    prices = load(PRICE_FILE)
-
-    new=[]
-
-    down=[]
+    new = []
+    down = []
 
     for p in properties:
-
         uid = p["id"]
 
         if uid not in seen:
-
             new.append(p)
-
-            seen[uid]=True
+            seen[uid] = True
 
         if uid in prices:
-
             if p["price"] < prices[uid]:
-
-                p["old_price"]=prices[uid]
-
+                p["old_price"] = prices[uid]
                 down.append(p)
 
-        prices[uid]=p["price"]
+        prices[uid] = p["price"]
 
-    save(SEEN_FILE,seen)
+    save_json(SEEN_FILE, seen)
+    save_json(PRICE_FILE, prices)
 
-    save(PRICE_FILE,prices)
+    return new, down
 
-    return new,down
 
-# ------------------------------
+# -------------------------
+# Main
+# -------------------------
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
     properties = collect()
 
-    new,down = detect(properties)
+    new, down = detect(properties)
 
-output={
-    "new":new,
-    "down":down,
-    "total":len(properties)
-}
+    output = {
+        "total": len(properties),
+        "new": new,
+        "down": down,
+    }
 
-with open("output.json","w",encoding="utf8") as f:
-    json.dump(output,f,ensure_ascii=False,indent=2)
+    with open("output.json", "w", encoding="utf8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
 
-mailer.send()
+    mailer.send()
 
-    print("新着",len(new),"件")
-
-    print("値下がり",len(down),"件")
+    print(f"取得:{len(properties)}件")
+    print(f"新着:{len(new)}件")
+    print(f"値下:{len(down)}件")
