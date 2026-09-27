@@ -209,12 +209,11 @@ def detect_updates(properties):
 
 if __name__=="__main__":
 
-    props = collect()
+    props=collect()
 
-    new,down = detect_updates(props)
+    new,down=detect_updates(props)
 
-    # 第2弾で mailer.py に渡す
-    output = {
+    output={
         "new":new,
         "down":down
     }
@@ -222,5 +221,8 @@ if __name__=="__main__":
     with open("output.json","w",encoding="utf8") as f:
         json.dump(output,f,ensure_ascii=False,indent=2)
 
-    print(f"新着:{len(new)}件")
-    print(f"値下:{len(down)}件")
+    import mailer
+
+    mailer.send()
+
+    print(f"メール送信完了 新着:{len(new)}件")
