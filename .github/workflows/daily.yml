@@ -2,11 +2,11 @@ name: Daily Property Search
 
 on:
   schedule:
-    - cron: "0 23 * * *"   # 日本時間 8:00
+    - cron: "0 23 * * *"
   workflow_dispatch:
 
 jobs:
-  run:
+  search:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,10 +16,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install -r requirements.txt
+      - name: Install Python
+        run: pip install -r requirements.txt
 
-      - run: python search.py
+      - name: Install Playwright
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run Search
         env:
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python search.py
+
+      - name: Save History
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email actions@github.com
+          git add seen.json price_history.json
+          git commit -m "update history" || echo "no changes"
+          git push
