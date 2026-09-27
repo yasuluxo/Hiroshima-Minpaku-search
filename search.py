@@ -1,274 +1,229 @@
-
-import os
-import re
 import json
+import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote
+
 import mailer
-
-# ==========================
-# 広島 民泊物件ハンター Ver4
-# ==========================
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 Chrome/138.0 Safari/537.36"
-    )
-}
-
-AREAS = [
-    {
-        "name": "中区",
-        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34101",
-    },
-    {
-        "name": "南区",
-        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34103",
-    },
-    {
-        "name": "西区",
-        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34104",
-    },
-    {
-        "name": "東区",
-        "url": "https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34102",
-    },
-]
-
-SEEN_FILE = "seen.json"
-PRICE_FILE = "price_history.json"
-
+from config import *
 
 # -------------------------
-# JSON
-# -------------------------
 
-def load_json(path):
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf8") as f:
+def load(path):
+
+    try:
+        with open(path,"r",encoding="utf8") as f:
             return json.load(f)
-    return {}
+    except:
+        return {}
 
+def save(path,data):
 
-def save_json(path, data):
-    with open(path, "w", encoding="utf8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-# -------------------------
-# Utility
-# -------------------------
-
-def get_price(text):
-    m = re.search(r"([0-9.]+)", text)
-    if not m:
-        return 999
-    return float(m.group(1))
-
-
-def get_company(title):
-    m = re.search(r"(株式会社.+?|.+?不動産)", title)
-    return m.group(1) if m else ""
-
+    with open(path,"w",encoding="utf8") as f:
+        json.dump(data,f,ensure_ascii=False,indent=2)
 
 # -------------------------
-# 民泊スコア
-# -------------------------
 
-def judge(prop):
-    score = 0
-    reasons = []
+def price(text):
 
-    text = (
-        prop["title"]
-        + " "
-        + prop["layout"]
-        + " "
-        + prop["address"]
-    )
+    m=re.search(r"([0-9.]+)",text)
 
-    if "戸建" in text:
-        score += 3
-        reasons.append("戸建")
+    if m:
+        return float(m.group(1))
 
-    if "木造" in text:
-        score += 2
-        reasons.append("木造")
-
-    if "SOHO" in text:
-        score += 2
-        reasons.append("SOHO")
-
-    if "事務所可" in text:
-        score += 2
-        reasons.append("事務所可")
-
-    if "店舗相談" in text:
-        score += 2
-        reasons.append("店舗相談")
-
-    if "駐車場" in text:
-        score += 1
-        reasons.append("駐車場")
-
-    if prop["price"] <= 6:
-        score += 2
-        reasons.append("低家賃")
-
-    if prop["area"] in ["中区", "南区"]:
-        score += 1
-        reasons.append("人気エリア")
-
-    score = min(score, 5)
-
-    stars = "★" * score + "☆" * (5 - score)
-
-    return stars, "・".join(reasons)
-
+    return 999
 
 # -------------------------
-# SUUMO取得
+
+def score(prop):
+
+    point=0
+    reason=[]
+
+    txt=prop["title"]+" "+prop["layout"]+" "+prop["address"]
+
+    if "戸建" in txt:
+        point+=3
+        reason.append("戸建")
+
+    if "木造" in txt:
+        point+=2
+        reason.append("木造")
+
+    if "SOHO" in txt:
+        point+=2
+        reason.append("SOHO")
+
+    if "事務所可" in txt:
+        point+=2
+        reason.append("事務所可")
+
+    if "店舗相談" in txt:
+        point+=2
+        reason.append("店舗相談")
+
+    if "駐車場" in txt:
+        point+=1
+        reason.append("駐車場")
+
+    if prop["price"]<=6:
+        point+=2
+        reason.append("低家賃")
+
+    if prop["area"] in ["中区","南区"]:
+        point+=1
+
+    if point>5:
+        point=5
+
+    star="★"*point+"☆"*(5-point)
+
+    return star,"・".join(reason)
+
 # -------------------------
 
 def scrape(area):
-    print("検索:", area["name"])
 
-    r = requests.get(area["url"], headers=HEADERS, timeout=20)
-    r.raise_for_status()
+    print("検索",area["name"])
 
-    soup = BeautifulSoup(r.text, "lxml")
+    r=requests.get(area["url"],headers=HEADERS,timeout=20)
 
-    cards = soup.select(".cassetteitem")
+    soup=BeautifulSoup(r.text,"lxml")
 
-    results = []
+    cards=soup.select(".cassetteitem")
+
+    result=[]
 
     for c in cards:
+
         try:
-            title = c.select_one(
-                ".cassetteitem_content-title"
-            ).get_text(strip=True)
 
-            address = c.select_one(
-                ".cassetteitem_detail-col1"
-            ).get_text(strip=True)
+            title=c.select_one(".cassetteitem_content-title").text.strip()
 
-            rent = c.select(
-                ".cassetteitem_price--rent"
-            )[0].get_text(strip=True)
+            rent=c.select(".cassetteitem_price--rent")[0].text.strip()
 
-            layout = c.select(
-                ".cassetteitem_madori"
-            )[0].get_text(strip=True)
+            layout=c.select(".cassetteitem_madori")[0].text.strip()
 
-            size = c.select(
-                ".cassetteitem_menseki"
-            )[0].get_text(strip=True)
+            size=c.select(".cassetteitem_menseki")[0].text.strip()
 
-            link = c.select_one(".js-cassette_link_href")["href"]
+            address=c.select_one(".cassetteitem_detail-col1").text.strip()
+
+            link=c.select_one(".js-cassette_link_href")["href"]
 
             if link.startswith("/"):
-                link = "https://suumo.jp" + link
+                link="https://suumo.jp"+link
 
-            uid = link.split("/")[-2]
+            uid=link.split("/")[-2]
 
-            prop = {
-                "id": uid,
-                "site": "SUUMO",
-                "area": area["name"],
-                "title": title,
-                "address": address,
-                "rent": rent,
-                "price": get_price(rent),
-                "layout": layout,
-                "size": size,
-                "company": get_company(title),
-                "url": link,
-                "map": "https://maps.google.com/?q="
-                + quote(address),
+            p={
+
+                "id":uid,
+
+                "area":area["name"],
+
+                "title":title,
+
+                "rent":rent,
+
+                "price":price(rent),
+
+                "layout":layout,
+
+                "size":size,
+
+                "address":address,
+
+                "url":link,
+
+                "map":"https://maps.google.com/?q="+quote(address)
+
             }
 
-            star, comment = judge(prop)
+            star,comment=score(p)
 
-            prop["score"] = star
-            prop["comment"] = comment
+            p["score"]=star
+            p["comment"]=comment
 
-            results.append(prop)
+            result.append(p)
 
-        except Exception:
+        except:
+
             continue
 
-    return results
+    return result
 
-
-# -------------------------
-# 全エリア取得
 # -------------------------
 
 def collect():
-    properties = []
 
-    for area in AREAS:
-        properties.extend(scrape(area))
+    props=[]
 
-    print("取得件数:", len(properties))
+    for a in AREAS:
 
-    return properties
+        props.extend(scrape(a))
 
+    print("取得",len(props))
+
+    return props
 
 # -------------------------
-# 新着・値下
-# -------------------------
 
-def detect(properties):
-    seen = load_json(SEEN_FILE)
-    prices = load_json(PRICE_FILE)
+def detect(props):
 
-    new = []
-    down = []
+    seen=load(SEEN_FILE)
 
-    for p in properties:
-        uid = p["id"]
+    prices=load(PRICE_FILE)
+
+    new=[]
+    down=[]
+
+    for p in props:
+
+        uid=p["id"]
 
         if uid not in seen:
+
             new.append(p)
-            seen[uid] = True
+
+            seen[uid]=True
 
         if uid in prices:
-            if p["price"] < prices[uid]:
-                p["old_price"] = prices[uid]
+
+            if p["price"]<prices[uid]:
+
+                p["old_price"]=prices[uid]
+
                 down.append(p)
 
-        prices[uid] = p["price"]
+        prices[uid]=p["price"]
 
-    save_json(SEEN_FILE, seen)
-    save_json(PRICE_FILE, prices)
+    save(SEEN_FILE,seen)
 
-    return new, down
+    save(PRICE_FILE,prices)
 
+    return new,down
 
 # -------------------------
-# Main
-# -------------------------
 
-if __name__ == "__main__":
+props=collect()
 
-    properties = collect()
+new,down=detect(props)
 
-    new, down = detect(properties)
+output={
 
-    output = {
-        "total": len(properties),
-        "new": new,
-        "down": down,
-    }
+    "total":len(props),
 
-    with open("output.json", "w", encoding="utf8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+    "new":new,
 
-    mailer.send()
+    "down":down
 
-    print(f"取得:{len(properties)}件")
-    print(f"新着:{len(new)}件")
-    print(f"値下:{len(down)}件")
+}
+
+with open("output.json","w",encoding="utf8") as f:
+
+    json.dump(output,f,ensure_ascii=False,indent=2)
+
+mailer.send()
+
+print("新着",len(new))
+print("値下",len(down))
