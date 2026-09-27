@@ -74,7 +74,11 @@ def send():
 
     msg=MIMEText(body,"plain","utf8")
 
-    msg["Subject"]=f"広島 民泊候補 {count}件"
+    msg["Subject"] = (
+    f"広島 民泊レポート "
+    f"取得{data['total']}件 "
+    f"新着{len(new)}件"
+)
 
     msg["From"]=EMAIL_USER
 
