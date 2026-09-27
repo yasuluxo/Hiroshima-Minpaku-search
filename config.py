@@ -1,19 +1,25 @@
-SEARCH_WORDS = [
-    "戸建",
-    "木造",
-    "一軒家",
-    "SOHO",
-    "事務所可",
-    "店舗相談",
-    "古民家",
-    "駐車場"
-]
-
 AREAS = [
-    "中区",
-    "南区",
-    "西区",
-    "東区"
+    {
+        "name":"中区",
+        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34101"
+    },
+    {
+        "name":"南区",
+        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34103"
+    },
+    {
+        "name":"西区",
+        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34104"
+    },
+    {
+        "name":"東区",
+        "url":"https://suumo.jp/jj/chintai/ichiran/FR301FC005/?ar=080&bs=040&ta=34&sc=34102"
+    }
 ]
 
-MAX_RENT = 100000
+HEADERS = {
+    "User-Agent":"Mozilla/5.0"
+}
+
+SEEN_FILE = "seen.json"
+PRICE_FILE = "price_history.json"
