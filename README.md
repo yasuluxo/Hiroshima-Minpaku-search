@@ -1,1 +1,0 @@
-# Hiroshima-Minpaku-search
