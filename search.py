@@ -221,13 +221,14 @@ def scrape(area):
 
 def collect():
 
-    all=[]
+    all_props=[]
 
     for area in AREAS:
+        all_props.extend(scrape(area))
 
-        all.extend(scrape(area))
+    print(f"取得件数：{len(all_props)}")
 
-    return all
+    return all_props
 
 # ------------------------------
 
@@ -275,19 +276,16 @@ if __name__=="__main__":
 
     new,down = detect(properties)
 
-    output={
+output={
+    "new":new,
+    "down":down,
+    "total":len(properties)
+}
 
-        "new":new,
+with open("output.json","w",encoding="utf8") as f:
+    json.dump(output,f,ensure_ascii=False,indent=2)
 
-        "down":down
-
-    }
-
-    with open("output.json","w",encoding="utf8") as f:
-
-        json.dump(output,f,ensure_ascii=False,indent=2)
-
-    mailer.send()
+mailer.send()
 
     print("新着",len(new),"件")
 
