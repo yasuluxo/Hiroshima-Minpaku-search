@@ -11,14 +11,16 @@ from pypdf import PdfReader
 from config import OFFICIAL_PAGES, USER_AGENT, OFFICIAL_DB_FILE
 
 WARD_NAMES = ["中区", "東区", "南区", "西区"]
+DATE_RE = re.compile(r"20\d{2}年\d{1,2}月\d{1,2}日")
+ADDRESS_RE = re.compile(r"広島市(?:中|東|南|西)区")
 
 
 def norm(s):
     s = unicodedata.normalize("NFKC", s or "").lower()
-    s = s.replace("広島市", "")
-    s = s.replace("広島県", "")
+    s = s.replace("広島市", "").replace("広島県", "")
     s = re.sub(r"\s+", "", s)
-    s = re.sub(r"[【】「」『』（）()［］\[\]・,，。:：/／_-]", "", s)
+    s = s.replace("－", "-").replace("‐", "-").replace("−", "-")
+    s = re.sub(r"[-【】「」『』（）()［］\[\]・,，。:：/／_\\\s]", "", s)
     return s
 
 
@@ -32,29 +34,25 @@ def clean_line(s):
 def extract_rooms(text):
     t = unicodedata.normalize("NFKC", text or "")
     rooms = []
-    # Room lists such as 201, 301, 401 or ３０１、３０２号
+    # 201 / 601号室 / ６０１号 etc.  Avoid short street numbers.
     for m in re.finditer(r"(?<!\d)(\d{3,4})(?:号室|号)?", t):
         n = m.group(1)
-        # Avoid treating ordinary street numbers as room numbers.
         if 100 <= int(n) <= 9999:
             rooms.append(n)
     return list(dict.fromkeys(rooms))
 
 
 def split_official_address(address):
-    """Split a Hiroshima official address into street/base and building-name parts."""
+    """Split official address into street/base and the suffix after the first 号."""
     a = clean_line(address)
     a = a.replace("－", "-").replace("‐", "-").replace("−", "-")
-    # Everything through the first 号 is the postal/street address. Anything after
-    # it is normally the building name and room number.
     m = re.search(r"^(.*?\d+号)(.*)$", a)
     if not m:
         return a, ""
     base = m.group(1).strip()
     tail = m.group(2).strip()
-    # A suffix like -202号 is still part of the address, not a building name.
     if re.fullmatch(r"[-]?\d{3,4}号?", tail):
-        base = base + tail
+        base += tail
         tail = ""
     return base, tail
 
@@ -64,18 +62,16 @@ def normalize_address_for_match(s):
     x = x.replace("広島県", "").replace("広島市", "")
     x = x.replace("－", "-").replace("‐", "-").replace("−", "-")
     x = re.sub(r"\s+", "", x)
-    x = x.replace("丁目", "丁目")
     return x
 
 
 def extract_address_parts(address):
-    """Return (ward, street_address_with_number, building_name, rooms)."""
+    """Return (ward, street/base address, building name, room numbers)."""
     a = normalize_address_for_match(address)
     ward_m = re.search(r"(中区|東区|南区|西区)", a)
     ward = ward_m.group(1) if ward_m else ""
     base, tail = split_official_address(a)
     rooms = extract_rooms(tail)
-    # Floor-only suffixes such as 2階、6階 are not building names.
     if re.fullmatch(r"(?:\d+階(?:[、,]\d+階)*)", tail):
         building = ""
     else:
@@ -97,39 +93,66 @@ def fetch_pdf(url):
     return r.content
 
 
-def extract_text(pdf_bytes):
+def extract_text_variants(pdf_bytes):
+    """Return multiple extraction variants because Hiroshima PDFs vary by layout."""
     reader = PdfReader(io.BytesIO(pdf_bytes))
-    chunks = []
-    for page in reader.pages:
-        try:
-            chunks.append(page.extract_text(extraction_mode="layout") or "")
-        except TypeError:
-            chunks.append(page.extract_text() or "")
-    return "\n".join(chunks)
+    variants = []
+    # Plain extraction is usually the most useful for the minpaku table.
+    for mode in (None, "layout"):
+        chunks = []
+        for page in reader.pages:
+            try:
+                if mode == "layout":
+                    txt = page.extract_text(extraction_mode="layout") or ""
+                else:
+                    txt = page.extract_text() or ""
+            except TypeError:
+                txt = page.extract_text() or ""
+            chunks.append(txt)
+        variants.append("\n".join(chunks))
+    # De-duplicate identical extraction outputs.
+    out = []
+    for x in variants:
+        if x not in out:
+            out.append(x)
+    return out
 
 
-def parse_minpaku(text):
+def _extract_minpaku_records(text):
+    """Parse date + Hiroshima address rows without relying on PDF column layout."""
+    text = unicodedata.normalize("NFKC", text or "")
+    # Remove repeated table headings so they cannot become part of an address.
+    text = re.sub(r"住宅宿泊事業法に基づく届出施設一覧[^\n]*", "", text)
+    text = re.sub(r"届出年月日\s*届出住宅の所在地[^\n]*", "", text)
+
+    # First try the most direct row pattern. It also handles rows concatenated
+    # without a newline (which occurs around page breaks in some PDF extractors).
+    row_re = re.compile(
+        r"(20\d{2}年\d{1,2}月\d{1,2}日)\s*"
+        r"(広島市(?:中|東|南|西)区.*?)"
+        r"(?=(?:20\d{2}年\d{1,2}月\d{1,2}日)|$)",
+        re.S,
+    )
+    candidates = list(row_re.finditer(text))
+
     records = []
-    # The current Hiroshima PDF is a two-column table. Across both normal and
-    # layout extraction, each row begins with a YYYY年M月D日 date followed by
-    # the complete address. Capture one row at a time until the next date.
-    row_re = re.compile(r"(20\d{2}年\d{1,2}月\d{1,2}日)\s*(広島市(?:中|東|南|西)区.*?)(?=20\d{2}年\d{1,2}月\d{1,2}日|$)", re.S)
-    for m in row_re.finditer(text):
+    for m in candidates:
         date = m.group(1)
         raw = clean_line(m.group(2))
-        # Remove PDF page headings/column labels accidentally included.
-        raw = re.sub(r"住宅宿泊事業法に基づく届出施設一覧.*?現在", "", raw)
-        raw = re.sub(r"届出年月日\s*届出住宅の所在地.*$", "", raw)
-        addr_m = re.search(r"(広島市(?:中|東|南|西)区.+)$", raw)
-        if not addr_m:
+        # A PDF footer/header can trail a row; cut it before the next heading.
+        raw = re.split(r"(?:届出年月日|住宅宿泊事業法に基づく届出施設一覧)", raw)[0].strip()
+        # Occasionally extraction puts two rows together with no date boundary
+        # but a new Hiroshima address. Keep only the first address in that case.
+        addr_matches = list(ADDRESS_RE.finditer(raw))
+        if len(addr_matches) > 1:
+            raw = raw[:addr_matches[1].start()].strip()
+        if not re.search(r"\d+番|\d+号|\d+-\d+", raw):
             continue
-        address = addr_m.group(1).strip()
-        if not re.search(r"\d+番|\d+号|\d+-\d+", address):
+        ward_m = re.search(r"(中区|東区|南区|西区)", raw)
+        if not ward_m:
             continue
-        ward = next((w for w in WARD_NAMES if w in address), "")
-        if not ward:
-            continue
-        _, _, building, rooms = extract_address_parts(address)
+        address = raw
+        ward, _, building, rooms = extract_address_parts(address)
         records.append({
             "type": "住宅宿泊事業",
             "category": "民泊届出",
@@ -144,20 +167,24 @@ def parse_minpaku(text):
     return dedupe_records(records)
 
 
+def parse_minpaku(text):
+    return _extract_minpaku_records(text)
+
+
 def extract_as_of_date(text):
     normalized_text = unicodedata.normalize("NFKC", text)
     m = re.search(r"令和\s*([0-9元一二三四五六七八九十百]+)年\s*(\d{1,2})月\s*(\d{1,2})日現在", normalized_text)
     if not m:
         return ""
     kanji = m.group(1)
-    vals = {"元":1,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9,"十":10}
+    vals = {"元": 1, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
     if kanji.isdigit():
         year = int(kanji)
     elif len(kanji) == 1:
         year = vals.get(kanji, 0)
     else:
         year = 0
-    return f"{2018+year}年{int(m.group(2))}月{int(m.group(3))}日現在" if year else ""
+    return f"{2018 + year}年{int(m.group(2))}月{int(m.group(3))}日現在" if year else ""
 
 
 def parse_ryokan(text):
@@ -172,7 +199,6 @@ def parse_ryokan(text):
             continue
         prefix = line[:m.start()].strip()
         rest = line[m.start():].strip()
-        # Address/operator/category can wrap to the next few PDF lines.
         chunk = rest
         for j in range(i + 1, min(i + 5, len(lines))):
             if re.search(r"(?:中|東|南|西)区", lines[j]) and re.search(r"\d+番|\d+号", lines[j]):
@@ -183,26 +209,18 @@ def parse_ryokan(text):
         cm = category_re.search(chunk)
         category = cm.group(1) if cm else "旅館業"
         pre_cat = chunk[:cm.start()].strip() if cm else chunk
-        # Split address from operator. Most operators have a recognizable legal
-        # entity prefix; otherwise keep the address up to the first obvious name
-        # boundary only when a separate line supplies the operator.
         op_match = re.search(r"\s((?:株式会社|有限会社|合同会社|一般社団法人|学校法人|医療法人).*)$", pre_cat)
         if op_match:
             address = pre_cat[:op_match.start()].strip()
             operator = op_match.group(1).strip()
         else:
-            # Personal-name operators are hard to distinguish from an address in
-            # plain PDF text. The address is normally complete on the first line;
-            # take that line's numeric/address segment and leave operator blank.
             address = pre_cat
             operator = ""
-            # If a later line contains a non-address operator, retain it as context.
-            for nxt in lines[i+1:min(i+4, len(lines))]:
+            for nxt in lines[i + 1:min(i + 4, len(lines))]:
                 if any(nxt.startswith(x) for x in operator_markers):
                     operator = nxt
                     break
         address = address.strip(" ,")
-        # If the address accidentally includes a page footer, trim it.
         address = re.split(r"(?:※|住宅宿泊事業法に基づく|旅館業法に基づく)", address)[0].strip()
         if not re.match(r"^(?:中|東|南|西)区", address):
             continue
@@ -210,8 +228,7 @@ def parse_ryokan(text):
             continue
         name = prefix
         if not name and i > 0:
-            # Some extraction modes put the facility name on the previous line.
-            prev = lines[i-1]
+            prev = lines[i - 1]
             if not re.search(r"(?:中|東|南|西)区", prev) and not category_re.search(prev):
                 name = prev
         name = re.sub(r"\s+", " ", name).strip()
@@ -232,23 +249,42 @@ def parse_ryokan(text):
         })
     return dedupe_records(records)
 
+
 def dedupe_records(records):
     out, seen = [], set()
     for r in records:
         ward, base, building, rooms = extract_address_parts(r.get("address", ""))
-        key = "|".join([norm(r.get("type")), norm(base), norm(building), norm(r.get("name")), norm(r.get("category"))])
+        building_name = building or r.get("name", "")
+        key = "|".join([
+            norm(r.get("type")),
+            norm(base),
+            norm(building_name),
+            norm(r.get("category")),
+            ",".join(sorted(r.get("rooms", []) or rooms)),
+        ])
         if key in seen:
             continue
         seen.add(key)
         r["ward"] = r.get("ward") or ward
         r["base_address"] = base
-        # For ryokan rows, the facility name is the useful building identifier.
-        r["building_name"] = building or r.get("name", "")
-        r["rooms"] = r.get("rooms") or rooms
+        r["building_name"] = building_name
+        r["rooms"] = list(dict.fromkeys(r.get("rooms") or rooms))
         r["address_norm"] = norm(base)
-        r["building_norm"] = norm(r.get("building_name", ""))
+        r["building_norm"] = norm(building_name)
         out.append(r)
     return out
+
+
+def _parse_best(kind, texts):
+    parsed = []
+    for text in texts:
+        records = parse_minpaku(text) if kind == "minpaku" else parse_ryokan(text)
+        parsed.append(records)
+    if not parsed:
+        return []
+    # Choose the extraction mode yielding the most records. This fixes PDFs where
+    # layout extraction separates the date and address columns.
+    return max(parsed, key=len)
 
 
 def build_official_db():
@@ -261,15 +297,23 @@ def build_official_db():
             r.raise_for_status()
             pdf_url = find_pdf_url(r.text, page_url)
             pdf = fetch_pdf(pdf_url)
-            text = extract_text(pdf)
-            if kind == "minpaku":
-                records = parse_minpaku(text)
-            else:
-                records = parse_ryokan(text)
+            texts = extract_text_variants(pdf)
+            records = _parse_best(kind, texts)
             all_records.extend(records)
-            diagnostics.append({"kind": kind, "status": "OK", "pdf_url": pdf_url, "records": len(records), "seconds": round(time.time()-started,1)})
+            diagnostics.append({
+                "kind": kind,
+                "status": "OK",
+                "pdf_url": pdf_url,
+                "records": len(records),
+                "seconds": round(time.time() - started, 1),
+            })
         except Exception as e:
-            diagnostics.append({"kind": kind, "status": "ERROR", "error": repr(e)[:500], "seconds": round(time.time()-started,1)})
+            diagnostics.append({
+                "kind": kind,
+                "status": "ERROR",
+                "error": repr(e)[:500],
+                "seconds": round(time.time() - started, 1),
+            })
     all_records = dedupe_records(all_records)
     db = {
         "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
@@ -293,36 +337,73 @@ def load_official_db():
 
 
 def compact_address(s):
-    x = norm(s)
-    x = x.replace("広島県", "")
-    return x
+    return norm(s)
 
 
 def match_official(property_item, db):
-    """Return matching official records. Matching is deliberately conservative."""
-    text = norm(" ".join([
-        property_item.get("title", ""),
-        property_item.get("address", ""),
-        property_item.get("description", ""),
-    ]))
-    paddr = compact_address(property_item.get("address", ""))
+    """Conservative official-list matching: exact base address/building, then room."""
+    paddr_raw = property_item.get("address", "") or ""
+    ptitle = property_item.get("title", "") or ""
+    pdesc = property_item.get("description", "") or ""
+    pward, pbase, pbuilding, prooms = extract_address_parts(paddr_raw)
+    if not pward:
+        # Some listing addresses omit '広島市'; try with the selected ward.
+        area = property_item.get("area", "")
+        if area in WARD_NAMES:
+            pward, pbase, pbuilding, prooms = extract_address_parts("広島市" + area + paddr_raw)
+
+    # Use title only as a building-name signal after stripping room/floor noise.
+    title_clean = unicodedata.normalize("NFKC", ptitle or "")
+    title_clean = re.sub(r"\s*(?:\d+階\s*/\s*\d+|\d{3,4}号室?|\d{3,4})\s*$", "", title_clean).strip()
+    title_norm = norm(title_clean)
+    if re.search(r"<[^>]+>", ptitle) or "class=" in ptitle.lower() or "onclick=" in ptitle.lower():
+        title_norm = ""
     matches = []
     for r in db.get("records", []):
-        raddr = compact_address(r.get("address", ""))
-        # Exact/near address match is strongest.
-        if raddr and (raddr in text or (paddr and paddr in raddr)):
-            matches.append(r)
+        if pward and r.get("ward") and pward != r.get("ward"):
             continue
-        # Building-name match: extract the non-address suffix from official address.
-        bname = r.get("name", "")
-        if bname and norm(bname) in text:
-            matches.append(r)
+        rbase = r.get("address_norm") or compact_address(r.get("base_address") or r.get("address", ""))
+        rbuilding = r.get("building_norm") or norm(r.get("building_name") or r.get("name", ""))
+        rrooms = set(r.get("rooms") or [])
+
+        # 1) Exact base address is required for an address-level match.
+        base_exact = bool(pbase and rbase and norm(pbase) == norm(rbase))
+
+        # 2) Exact building name. Never use substring matching.
+        building_exact = bool(pbuilding and rbuilding and norm(pbuilding) == rbuilding)
+        title_building_exact = bool(title_norm and rbuilding and title_norm == rbuilding)
+
+        # A room number is never sufficient by itself: the building identity must
+        # also agree when both sides have a building name. This prevents cases such
+        # as "西十日市ビル" being treated as "十日市ビル" just because 201 matches.
+        building_consistent = (
+            not pbuilding
+            or not rbuilding
+            or building_exact
+            or title_building_exact
+        )
+        room_exact = bool(prooms and rrooms and set(prooms) & rrooms)
+
+        if base_exact and room_exact and building_consistent:
+            level = "部屋番号一致"
+        elif base_exact and building_consistent:
+            level = "住所一致"
+        elif building_exact or (title_building_exact and (not pbase or not rbase)):
+            level = "建物名一致"
+        else:
             continue
-        # For minpaku rows the building name is embedded in the address. Try a
-        # distinctive tail after the ward/number.
-        addr = r.get("address", "")
-        parts = re.split(r"\d+番地?\d*|\d+番|\d+号", addr)
-        tail = norm(parts[-1]) if parts else ""
-        if len(tail) >= 3 and tail in text:
-            matches.append(r)
-    return matches
+
+        item = dict(r)
+        item["match_level"] = level
+        matches.append(item)
+
+    # Prefer the strongest level and remove duplicate official rows.
+    rank = {"部屋番号一致": 3, "住所一致": 2, "建物名一致": 1}
+    matches.sort(key=lambda x: (-rank.get(x.get("match_level", ""), 0), x.get("type", ""), x.get("address", "")))
+    out, seen = [], set()
+    for m in matches:
+        key = (m.get("type"), m.get("address"), m.get("category"), m.get("match_level"))
+        if key not in seen:
+            seen.add(key)
+            out.append(m)
+    return out
