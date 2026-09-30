@@ -14,7 +14,8 @@ def add_property(lines, p, n):
     if p.get('comment'): lines.append(f"   注目点：{p['comment']}")
     if p.get('official_matches'):
         lines.append("   【広島市公式一覧との一致】")
-        for r in p['official_matches'][:6]:
+        lines.append(f"     判定：{p.get('official_match_level','一致')}")
+        for r in p['official_matches'][:4]:
             label = r.get('category','')
             date = r.get('date','')
             name = r.get('name','')
@@ -22,6 +23,7 @@ def add_property(lines, p, n):
             lines.append(f"     {r.get('type','')} / {label} / {date}")
             if name: lines.append(f"     施設名：{name}")
             if addr: lines.append(f"     公式所在地：{addr}")
+            if r.get('rooms'): lines.append(f"     公式登録部屋：{', '.join(r.get('rooms',[]))}")
     if p.get('duplicate_count',1)>1: lines.append(f"   同一候補として統合：{p['duplicate_count']}件")
     lines.append(f"   {p.get('url','')}")
     for su in p.get('source_urls',[]):
@@ -43,7 +45,7 @@ def send_report(data):
     official_candidate_count=sum(1 for p in data.get('sample',[]) if p.get('official_matches'))
 
     lines=[
-        "広島 民泊候補物件 第8弾レポート",
+        "広島 民泊候補物件 第8.1弾レポート",
         "="*52,
         "",
         f"取得した生データ：{data.get('total_raw',0)}件",
@@ -52,10 +54,13 @@ def send_report(data):
         f"今回の新着：{len(new)}件",
         f"家賃値下げ：{len(down)}件",
         f"広島市公式一覧DB：{official_records}レコード / 取得成功{official_ok}系統",
+        f"公式照合：部屋一致{data.get('official_match_levels',{}).get('部屋番号一致',0)} / 住所一致{data.get('official_match_levels',{}).get('住所一致',0)} / 建物名一致{data.get('official_match_levels',{}).get('建物名一致',0)}",
         "",
         "【第8弾の検索ルール】",
         "・戸建て系：従来通り、SUUMO / HOME'S / at home を広く検索",
-        "・アパート/マンション等：広島市公式の『民泊届出』または『旅館業許可』一覧と一致するものだけ採用",
+        "・アパート/マンション等：広島市公式の『民泊届出』または『旅館業許可』一覧と、住所または建物名が明確に一致するものだけ採用",
+        "・公式照合は町名だけの一致を採用しない",
+        "・公式照合は『部屋番号一致』『住所一致』『建物名一致』を区別",
         "・家賃上限：10万円以下",
         "",
         "【広島市公式PDF取得状況】",
@@ -70,7 +75,9 @@ def send_report(data):
 
     lines += ["", "【サイト別取得状況】", "-"*52]
     for x in data.get('diagnostics',[]):
-        lines.append(f"{x.get('source')} / {x.get('area')}：raw={x.get('raw',0)} parsed={x.get('parsed',0)} status={x.get('status')} body={x.get('body_chars',0)}")
+        line = f"{x.get('source')} / {x.get('area')}：raw={x.get('raw',0)} parsed={x.get('parsed',0)} status={x.get('status')} body={x.get('body_chars',0)} attempts={x.get('attempts',1)}"
+        if x.get('hint'): line += f" / {x.get('hint')}"
+        lines.append(line)
         if x.get('error'): lines.append(f"  エラー：{x['error']}")
     failures=[x for x in data.get('diagnostics',[]) if x.get('status')!='OK']
     if failures:
@@ -92,12 +99,13 @@ def send_report(data):
     lines += [
         "",
         "="*52,
-        "※『公式一覧に一致』は、広島市が公開している届出/許可一覧との住所・建物名等の一致を示すもので、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
+        "※『部屋番号一致』は公式一覧の登録部屋番号と募集物件の部屋番号が一致したこと、『住所一致』は番地/号まで一致したこと、『建物名一致』は建物名が明確に一致したことを示します。",
+        "※『公式一覧に一致』は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
         "※賃貸借契約、管理規約、所有者・管理会社の承諾、消防・建築・条例等は別途確認してください。",
         "※同一物件と思われる掲載は住所・家賃・間取り・面積等で統合しています。",
     ]
     msg=MIMEText("\n".join(lines),"plain","utf-8")
-    msg["Subject"]=f"広島民泊 第8弾 候補{candidates}件 / 新着{len(new)}件 / 公式一致あり"
+    msg["Subject"]=f"広島民泊 第8.1弾 候補{candidates}件 / 新着{len(new)}件 / 公式照合精密化"
     msg["From"]=user; msg["To"]=to
     with smtplib.SMTP_SSL("smtp.gmail.com",465) as smtp:
         smtp.login(user,password); smtp.send_message(msg)
