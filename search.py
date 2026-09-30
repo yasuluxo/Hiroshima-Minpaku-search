@@ -2,6 +2,7 @@ import json, os, re, time, unicodedata
 from urllib.parse import urljoin, quote
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE
+from official_db import build_official_db, load_official_db, match_official
 from mailer import send_report
 
 
@@ -67,6 +68,11 @@ def make_canonical_id(p):
         return f"addr|{address}|{rent}|{layout}|{size}|{area}"
     # 住所が取れないサイトはタイトル・家賃・間取り・面積でまとめる
     return f"text|{title}|{rent}|{layout}|{size}|{area}"
+
+
+def is_detached_property(p):
+    text = " ".join([p.get("title", ""), p.get("description", ""), p.get("layout", "")])
+    return any(w in text for w in ["戸建", "一戸建", "貸家", "テラスハウス", "タウンハウス", "長屋"] )
 
 
 def score_property(p):
@@ -174,11 +180,25 @@ def dedupe(items):
     return out
 
 
-def filter_candidates(items):
+def filter_candidates(items, official_db):
     out=[]
     for p in items:
         if p.get("rent") is None or p["rent"] > MAX_RENT: continue
+        official_matches = match_official(p, official_db)
+        detached = is_detached_property(p)
+        # 第8弾の方針：戸建て系は従来通り広く検索。
+        # アパート・マンション等は、広島市の公式一覧に登録された
+        # 建物・住所と一致した候補だけを残す。
+        if not detached and not official_matches:
+            continue
+        p["property_kind"] = "戸建て系" if detached else "公式一覧一致（集合住宅等）"
+        p["official_matches"] = official_matches
+        p["official_match_count"] = len(official_matches)
+        p["official_types"] = sorted(set(x.get("type", "") for x in official_matches))
         p["score"],p["comment"]=score_property(p)
+        if official_matches:
+            p["score"] = "★"*min(5, max(3, sum(1 for c in p.get("score","") if c=="★") + 2)) + "☆"*max(0, 5-min(5, max(3, sum(1 for c in p.get("score","") if c=="★") + 2)))
+            p["comment"] = (p.get("comment","") + "・" if p.get("comment") else "") + "広島市公式の民泊/旅館業一覧に一致"
         p["map"]="https://www.google.com/maps/search/?api=1&query="+quote(p.get("address") or f"{p.get('area','')} {p.get('title','')}")
         out.append(p)
     # 民泊向き加点→家賃安い順
@@ -208,6 +228,9 @@ def detect_changes(candidates):
 
 def main():
     diagnostics=[]; raw_items=[]
+    official_db = build_official_db()
+    for od in official_db.get("diagnostics", []):
+        print(json.dumps({"official_source": od}, ensure_ascii=False))
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
         context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP")
@@ -229,9 +252,9 @@ def main():
                 rec["seconds"]=round(time.time()-started,1); diagnostics.append(rec); print(json.dumps(rec,ensure_ascii=False))
         browser.close()
     unique=dedupe(raw_items)
-    candidates=filter_candidates(unique)
+    candidates=filter_candidates(unique, official_db)
     new_items,price_down=detect_changes(candidates)
-    report={"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"new":new_items,"price_down":price_down,"sample":candidates[:10],"diagnostics":diagnostics}
+    report={"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"new":new_items,"price_down":price_down,"sample":candidates[:10],"diagnostics":diagnostics,"official_db":official_db}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
