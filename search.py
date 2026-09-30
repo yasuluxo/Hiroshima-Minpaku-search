@@ -198,7 +198,15 @@ def filter_candidates(items, official_db):
         p["score"],p["comment"]=score_property(p)
         if official_matches:
             p["score"] = "★"*min(5, max(3, sum(1 for c in p.get("score","") if c=="★") + 2)) + "☆"*max(0, 5-min(5, max(3, sum(1 for c in p.get("score","") if c=="★") + 2)))
-            p["comment"] = (p.get("comment","") + "・" if p.get("comment") else "") + "広島市公式の民泊/旅館業一覧に一致"
+            levels = [x.get("match_level", "") for x in official_matches]
+            best_level = "部屋番号一致" if "部屋番号一致" in levels else ("住所一致" if "住所一致" in levels else "建物名一致")
+            p["official_match_level"] = best_level
+            comment = {
+                "部屋番号一致": "広島市公式一覧：部屋番号まで一致",
+                "住所一致": "広島市公式一覧：住所一致（同一建物候補）",
+                "建物名一致": "広島市公式一覧：建物名一致（同一建物候補）",
+            }.get(best_level, "広島市公式一覧に一致")
+            p["comment"] = (p.get("comment","") + "・" if p.get("comment") else "") + comment
         p["map"]="https://www.google.com/maps/search/?api=1&query="+quote(p.get("address") or f"{p.get('area','')} {p.get('title','')}")
         out.append(p)
     # 民泊向き加点→家賃安い順
@@ -234,27 +242,39 @@ def main():
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
         context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP")
-        page=context.new_page()
         for area,sources in AREAS.items():
             for source,url in sources.items():
-                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"error":"","page_title":"","body_chars":0}
-                try:
-                    if source=="suumo": items,raw=scrape_suumo(page,area,url)
-                    elif source=="homes": items,raw=scrape_homes(page,area,url)
-                    else: items,raw=scrape_athome(page,area,url)
-                    rec["raw"]=raw; rec["parsed"]=len(items); rec["page_title"]=page.title()[:200]; rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
-                    rec["status"]="OK" if items else "RETRIEVAL_ZERO"
-                    raw_items.extend(items)
-                except PlaywrightTimeoutError as e:
-                    rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
-                except Exception as e:
-                    rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
-                rec["seconds"]=round(time.time()-started,1); diagnostics.append(rec); print(json.dumps(rec,ensure_ascii=False))
+                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"error":"","page_title":"","body_chars":0,"attempts":0}
+                for attempt in range(2):
+                    page=context.new_page()
+                    try:
+                        if attempt:
+                            time.sleep(1.2)
+                        rec["attempts"] = attempt + 1
+                        if source=="suumo": items,raw=scrape_suumo(page,area,url)
+                        elif source=="homes": items,raw=scrape_homes(page,area,url)
+                        else: items,raw=scrape_athome(page,area,url)
+                        rec["raw"]=raw; rec["parsed"]=len(items); rec["page_title"]=page.title()[:200]; rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
+                        rec["status"]="OK" if items else "RETRIEVAL_ZERO"
+                        if items:
+                            raw_items.extend(items)
+                            break
+                    except PlaywrightTimeoutError as e:
+                        rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                    except Exception as e:
+                        rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                    finally:
+                        try: page.close()
+                        except Exception: pass
+                rec["seconds"]=round(time.time()-started,1)
+                if rec["status"]=="RETRIEVAL_ZERO" and rec["body_chars"] < 1000:
+                    rec["hint"]="ページ本文が短く、ブロック/リダイレクト等の可能性"
+                diagnostics.append(rec); print(json.dumps(rec,ensure_ascii=False))
         browser.close()
     unique=dedupe(raw_items)
     candidates=filter_candidates(unique, official_db)
     new_items,price_down=detect_changes(candidates)
-    report={"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"new":new_items,"price_down":price_down,"sample":candidates[:10],"diagnostics":diagnostics,"official_db":official_db}
+    report={"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"new":new_items,"price_down":price_down,"sample":candidates[:20],"diagnostics":diagnostics,"official_db":official_db,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
