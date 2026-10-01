@@ -7,7 +7,7 @@ from urllib.parse import urljoin, quote
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
-from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE
+from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE, CANDIDATE_HISTORY_FILE
 from official_db import build_official_db, match_official, extract_address_parts
 from mailer import send_report
 
@@ -310,11 +310,58 @@ def filter_candidates(items, official_db):
     return out
 
 
+def load_candidate_history():
+    """Persistent ledger of every candidate ever discovered by this project."""
+    data = load_json(CANDIDATE_HISTORY_FILE, {})
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def merge_candidate_history(candidates):
+    """
+    Keep every discovered candidate instead of treating 'seen' as a deletion
+    filter.  User review state is intentionally separate from discovery state.
+    """
+    history = load_candidate_history()
+    now = time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    for p in candidates:
+        cid = p["id"]
+        old = history.get(cid, {})
+        first_seen = old.get("first_seen_at") or now
+        review_status = old.get("review_status", "未確認")
+        notes = old.get("review_notes", "")
+        discovery_count = int(old.get("discovery_count", 0)) + 1
+
+        # Keep current listing data while preserving review metadata/history.
+        record = dict(p)
+        record["first_seen_at"] = first_seen
+        record["last_seen_at"] = now
+        record["discovery_count"] = discovery_count
+        record["review_status"] = review_status
+        record["review_notes"] = notes
+        record["active"] = True
+        history[cid] = record
+
+    # Candidates not found in today's crawl remain in the ledger.
+    current_ids = {p["id"] for p in candidates}
+    for cid, record in history.items():
+        if cid not in current_ids:
+            record["active"] = False
+            record["last_checked_at"] = now
+
+    save_json(CANDIDATE_HISTORY_FILE, history)
+    return history
+
+
 def detect_changes(candidates):
     seen = load_json(SEEN_FILE, {})
     prices = load_json(PRICE_FILE, {})
     new_items = []
     price_down = []
+
+    # IMPORTANT: seen is notification/change history only. It is NOT used to
+    # remove previously discovered candidates from the candidate ledger.
     for p in candidates:
         cid = p["id"]
         old = prices.get(cid)
@@ -331,9 +378,11 @@ def detect_changes(candidates):
             seen[p["url"]] = True
         if p.get("rent") is not None:
             prices[cid] = p["rent"]
+
     save_json(SEEN_FILE, seen)
     save_json(PRICE_FILE, prices)
     return new_items, price_down
+
 
 
 def main():
@@ -402,13 +451,19 @@ def main():
     unique = dedupe(raw_items)
     candidates = filter_candidates(unique, official_db)
     new_items, price_down = detect_changes(candidates)
+    history = merge_candidate_history(candidates)
+    all_candidates = list(history.values())
+    all_candidates.sort(key=lambda x: (not x.get("active", False), x.get("review_status", "未確認") != "未確認", x.get("rent") or 999999, x.get("area", ""), x.get("title", "")))
     report = {
-        "version": "8.2",
+        "version": "8.3",
         "total_raw": len(raw_items),
         "total_retrieved": len(unique),
         "candidates": len(candidates),
         "new": new_items,
         "price_down": price_down,
+        "all_candidates": all_candidates,
+        "active_candidates": [p for p in all_candidates if p.get("active", False)],
+        "unreviewed_candidates": [p for p in all_candidates if p.get("review_status", "未確認") == "未確認"],
         "sample": candidates[:20],
         "diagnostics": diagnostics,
         "official_db": official_db,
