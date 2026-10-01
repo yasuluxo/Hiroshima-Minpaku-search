@@ -26,6 +26,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrom
 SEEN_FILE = "seen.json"
 PRICE_FILE = "price_history.json"
 DIAG_FILE = "diagnostics.json"
+CANDIDATE_HISTORY_FILE = "candidate_history.json"
 OFFICIAL_DB_FILE = "official_db.json"
 OFFICIAL_PAGES = {
     "minpaku": "https://www.city.hiroshima.lg.jp/business/seikatsu-eisei/1026705/1013508.html",
