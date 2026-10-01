@@ -1,70 +1,678 @@
-{
-  "text|賃貸一戸建て広電本社前駅徒歩4分4.5万円3k30.57m2|45000|3k|30.6|中区": {
-    "source": "ATHOME",
-    "area": "中区",
-    "title": "賃貸一戸建て 「広電本社前」駅 徒歩4分 4.5万円 / 3K / 30.57㎡",
-    "rent": 45000,
-    "layout": "3K",
-    "size": 30.57,
-    "address": "",
-    "url": "https://www.athome.co.jp/chintai/1170108803/?RECOMMFLG=1&BKLISTID=031PPC&sref=rn_reco",
-    "description": "賃貸一戸建て 「広電本社前」駅 徒歩4分 4.5万円 / 3K / 30.57㎡",
-    "id": "text|賃貸一戸建て広電本社前駅徒歩4分4.5万円3k30.57m2|45000|3k|30.6|中区",
-    "source_urls": [
-      {
-        "source": "ATHOME",
-        "url": "https://www.athome.co.jp/chintai/1170108803/?RECOMMFLG=1&BKLISTID=031PPC&sref=rn_reco"
-      }
+[
+  {
+    "site": "suumo",
+    "ward": "中区",
+    "title": "suumo",
+    "building_name": "suumo",
+    "address": "広島市中区で賃貸住宅[賃貸マンション・賃貸アパート]を借りるなら、お部屋探し物件",
+    "room": "6913",
+    "rent": 91000,
+    "area": 32.54,
+    "kind": "戸建て系",
+    "url": "https://www.recruit.co.jp/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
     ],
-    "duplicate_count": 1,
-    "address_quality": "LOW",
-    "property_kind": "戸建て系",
-    "official_matches": [],
-    "official_match_count": 0,
-    "official_types": [],
-    "score": "★★★★★",
-    "comment": "戸建・一戸建・家賃6万円以下",
-    "map": "https://www.google.com/maps/search/?api=1&query=%E4%B8%AD%E5%8C%BA%20%E8%B3%83%E8%B2%B8%E4%B8%80%E6%88%B8%E5%BB%BA%E3%81%A6%20%E3%80%8C%E5%BA%83%E9%9B%BB%E6%9C%AC%E7%A4%BE%E5%89%8D%E3%80%8D%E9%A7%85%20%E5%BE%92%E6%AD%A94%E5%88%86%204.5%E4%B8%87%E5%86%86%20/%203K%20/%2030.57%E3%8E%A1",
-    "status": "新着",
-    "first_seen_at": "2026-10-01T06:54:24+09:00",
-    "last_seen_at": "2026-10-01T06:54:24+09:00",
-    "discovery_count": 1,
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.recruit.co.jp/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
     "review_status": "未確認",
-    "review_notes": "",
-    "active": true
+    "review_notes": ""
   },
-  "text|メゾネットtkd棟1|65000|2ldk|56.0|南区": {
-    "source": "SUUMO",
-    "area": "南区",
-    "title": "メゾネットＴＫ Ｄ棟 １－",
-    "rent": 65000,
-    "layout": "2LDK",
-    "size": 56.0,
-    "address": "",
-    "url": "javascript:void(0);",
-    "description": "賃貸テラス・タウンハウス メゾネットＴＫ Ｄ棟 １－ 広島県広島市南区向洋新町２ ＪＲ山陽本線/向洋駅 歩25分 築37年 地上2階建 階 賃料/管理費 敷金/礼金 間取り/専有面積 お気に入り 1階 6.5万円 - 13万円 6.5万円 2LDK 56m2 追加 詳細を見るお問い合わせ (無料)",
-    "id": "text|メゾネットtkd棟1|65000|2ldk|56.0|南区",
-    "source_urls": [
-      {
-        "source": "SUUMO",
-        "url": "javascript:void(0);"
-      }
+  {
+    "site": "suumo",
+    "ward": "中区",
+    "title": "採用情報",
+    "building_name": "採用情報",
+    "address": "広島市中区で賃貸住宅[賃貸マンション・賃貸アパート]を借りるなら、お部屋探し物件",
+    "room": "6913",
+    "rent": 91000,
+    "area": 32.54,
+    "kind": "戸建て系",
+    "url": "https://www.recruit.co.jp/employment/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
     ],
-    "duplicate_count": 1,
-    "address_quality": "LOW",
-    "property_kind": "戸建て系",
-    "official_matches": [],
-    "official_match_count": 0,
-    "official_types": [],
-    "score": "★★★☆☆",
-    "comment": "タウンハウス・家賃8万円以下",
-    "map": "https://www.google.com/maps/search/?api=1&query=%E5%8D%97%E5%8C%BA%20%E3%83%A1%E3%82%BE%E3%83%8D%E3%83%83%E3%83%88%EF%BC%B4%EF%BC%AB%20%EF%BC%A4%E6%A3%9F%20%EF%BC%91%EF%BC%8D",
-    "status": "新着",
-    "first_seen_at": "2026-10-01T06:54:24+09:00",
-    "last_seen_at": "2026-10-01T06:54:24+09:00",
-    "discovery_count": 1,
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.recruit.co.jp/employment/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
     "review_status": "未確認",
-    "review_notes": "",
-    "active": true
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "最近見た物件",
+    "building_name": "最近見た物件",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/mypage/bukken-history",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/mypage/bukken-history",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "お気に入り",
+    "building_name": "お気に入り",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/mypage/favorite",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/mypage/favorite",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "※評価について",
+    "building_name": "※評価について",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://inquiry.homes.co.jp/bukkensendo",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://inquiry.homes.co.jp/bukkensendo",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "不動産・住宅情報サイトLIFULL HOME'S",
+    "building_name": "不動産・住宅情報サイトLIFULL HOME'S",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/",
+    "reasons": [
+      "集合住宅（公式DB照合対象）",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "賃貸",
+    "building_name": "賃貸",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/",
+    "reasons": [
+      "集合住宅（公式DB照合対象）",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "中国・四国",
+    "building_name": "中国・四国",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/chugoku/",
+    "reasons": [
+      "集合住宅（公式DB照合対象）",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/chugoku/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "検索条件の設定・変更",
+    "building_name": "検索条件の設定・変更",
+    "address": "広島市中区",
+    "room": "100",
+    "rent": 20000,
+    "area": 10.0,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/callcenter/?utm_source=v5sp&utm_medium=own&utm_campaign=callcenter_v5pclist_00",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃6万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/callcenter/?utm_source=v5sp&utm_medium=own&utm_campaign=callcenter_v5pclist_00",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "検索条件の設定・変更",
+    "building_name": "検索条件の設定・変更",
+    "address": "広島市中区",
+    "room": "100",
+    "rent": 20000,
+    "area": 10.0,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/imayori/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃6万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/imayori/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "検索条件の設定・変更",
+    "building_name": "検索条件の設定・変更",
+    "address": "広島市中区",
+    "room": "100",
+    "rent": 20000,
+    "area": 10.0,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/mansion/shinchiku/special/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃6万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/mansion/shinchiku/special/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "すべての特集を見る",
+    "building_name": "すべての特集を見る",
+    "address": "広島市中区の賃貸(賃貸マンション・アパート)",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/theme/",
+    "reasons": [
+      "集合住宅（公式DB照合対象）",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/theme/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "プライバシーポリシー",
+    "building_name": "プライバシーポリシー",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://lifull.com/privacy/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://lifull.com/privacy/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "ログインする",
+    "building_name": "ログインする",
+    "address": "広島市>中区の賃貸 物件一覧",
+    "room": "685",
+    "rent": 85000,
+    "area": 32.52,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/authbase/authorize/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/authbase/authorize/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "athome",
+    "ward": "中区",
+    "title": "登録",
+    "building_name": "登録",
+    "address": "広島市中区の賃貸物件を探す",
+    "room": "３０３",
+    "rent": 10000,
+    "area": 30.0,
+    "kind": "戸建て系",
+    "url": "https://app.adjust.com/raum0dv?redirect=https%3a%2f%2fwww%2eathome%2eco%2ejp%2fservice%2fapp%2f&campaign=athome_pc&adgroup=lp_service_app",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃6万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://app.adjust.com/raum0dv?redirect=https%3a%2f%2fwww%2eathome%2eco%2ejp%2fservice%2fapp%2f&campaign=athome_pc&adgroup=lp_service_app",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "南区",
+    "title": "賃貸アパート\nＦｅｌｉｃｅ　Ｍｉｎａｍｉ（フェリーチェ　ミナミ）",
+    "building_name": "賃貸アパート\nＦｅｌｉｃｅ　Ｍｉｎａｍｉ（フェリーチェ　ミナミ）",
+    "address": "広島県広島市南区皆実町1丁目",
+    "room": "000",
+    "rent": 98000,
+    "area": 61.53,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/f70d5af53d1332b3f339e5b193d848829173d8ac/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/f70d5af53d1332b3f339e5b193d848829173d8ac/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "南区",
+    "title": "2階",
+    "building_name": "2階",
+    "address": "",
+    "room": "000",
+    "rent": 98000,
+    "area": 61.53,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/6073848ff263c36fa9576b8cfd23bd7db2c524cf/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/6073848ff263c36fa9576b8cfd23bd7db2c524cf/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "南区",
+    "title": "2階",
+    "building_name": "2階",
+    "address": "",
+    "room": "000",
+    "rent": 98000,
+    "area": 61.53,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/7df32756c4503d0e44761a45ebacb9e8085b1155/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/7df32756c4503d0e44761a45ebacb9e8085b1155/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "南区",
+    "title": "賃貸テラスハウス\nウィルコート東雲",
+    "building_name": "賃貸テラスハウス\nウィルコート東雲",
+    "address": "広島県広島市南区東雲3丁目",
+    "room": "000",
+    "rent": 89000,
+    "area": 68.9,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/f90e33b12bd4b9769ad93e4008119b477c8c0f7a/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/f90e33b12bd4b9769ad93e4008119b477c8c0f7a/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "西区",
+    "title": "賃貸テラスハウス\nＰＫｈｏｕｓｅ",
+    "building_name": "賃貸テラスハウス\nＰＫｈｏｕｓｅ",
+    "address": "広島県広島市西区観音新町3丁目",
+    "room": "",
+    "rent": 89000,
+    "area": 56.4,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/8a25e3957a6da2dcbc0c5bd4283ca343972df123/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/8a25e3957a6da2dcbc0c5bd4283ca343972df123/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "西区",
+    "title": "賃貸一戸建て\n森岡邸",
+    "building_name": "賃貸一戸建て\n森岡邸",
+    "address": "広島県広島市西区古江東町",
+    "room": "",
+    "rent": 95000,
+    "area": 93.36,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/76087416d442fc96f72e2a9a7bb8f75f193d9f67/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/76087416d442fc96f72e2a9a7bb8f75f193d9f67/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "西区",
+    "title": "賃貸テラスハウス\nシャルム大可Ａ",
+    "building_name": "賃貸テラスハウス\nシャルム大可Ａ",
+    "address": "広島県広島市西区草津新町2丁目",
+    "room": "",
+    "rent": 88000,
+    "area": 69.2,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/f530640baa301662662f6ca31ae55346803d6506/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/f530640baa301662662f6ca31ae55346803d6506/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "athome",
+    "ward": "西区",
+    "title": "ザ・ライオンズ横川\n\n広島県広島市西区横川新町\nＪＲ山陽本線「横川」駅\n8500万円\nこの物件の詳細を見る",
+    "building_name": "ザ・ライオンズ横川\n\n広島県広島市西区横川新町\nＪＲ山陽本線「横川」駅\n8500万円\nこの物件の詳細を見る",
+    "address": "広島市西区の賃貸物件を探す",
+    "room": "３０６",
+    "rent": 10000,
+    "area": 30.0,
+    "kind": "戸建て系",
+    "url": "https://www.athome.co.jp/mansion/shinchiku/123161/?at=bottom_reco",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃6万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.athome.co.jp/mansion/shinchiku/123161/?at=bottom_reco",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "東区",
+    "title": "賃貸一戸建て\nＭａｉｓｏｎ21",
+    "building_name": "賃貸一戸建て\nＭａｉｓｏｎ21",
+    "address": "広島県広島市東区牛田早稲田4丁目",
+    "room": "000",
+    "rent": 88000,
+    "area": 108.28,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/22684cb92f76f72d93f029057cab5f8fd4b341cb/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/22684cb92f76f72d93f029057cab5f8fd4b341cb/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "東区",
+    "title": "賃貸一戸建て\n牛田早稲田戸建",
+    "building_name": "賃貸一戸建て\n牛田早稲田戸建",
+    "address": "広島県広島市東区牛田早稲田2丁目",
+    "room": "104",
+    "rent": 83000,
+    "area": 104.54,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/735870689d6b8713d20133e4910aed08fe14f313/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃10万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/735870689d6b8713d20133e4910aed08fe14f313/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "東区",
+    "title": "賃貸テラスハウス\nＳＡＴＯＮＯＷＡ　ＴＥＲＲＡＣＥ　北棟",
+    "building_name": "賃貸テラスハウス\nＳＡＴＯＮＯＷＡ　ＴＥＲＲＡＣＥ　北棟",
+    "address": "広島県広島市東区牛田早稲田3丁目",
+    "room": "000",
+    "rent": 80000,
+    "area": 48.44,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/room/fed0d01af21c4e70cc0cf8fac137ddb06cffeb23/",
+    "reasons": [
+      "戸建・一戸建・タウンハウス等",
+      "家賃8万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/room/fed0d01af21c4e70cc0cf8fac137ddb06cffeb23/",
+    "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "last_seen_at": "2026-10-01T13:48:22.500865+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
   }
-}
+]
