@@ -121,10 +121,11 @@ def send_report(data):
         "※ユーザーが確認済み・対象外と変更した候補は、検索結果から自動削除せず履歴として保持します。",
     ]
     msg=MIMEText("\n".join(lines),"plain","utf-8")
+    total_candidates = len(data.get("all_candidates", []))
+    unreviewed_candidates = len(data.get("unreviewed_candidates", []))
     msg["Subject"] = (
-    f"広島民泊 第8.3弾 "
-    f"累計{len(data.get('all_candidates', []))}件 / "
-    f"未確認{len(data.get('unreviewed_candidates', []))}件"
+        f"広島民泊 第8.3弾 累計{total_candidates}件 / 未確認{unreviewed_candidates}件"
+    )
     msg["From"]=user; msg["To"]=to
     with smtplib.SMTP_SSL("smtp.gmail.com",465) as smtp:
         smtp.login(user,password); smtp.send_message(msg)
