@@ -45,12 +45,15 @@ def send_report(data):
     official_candidate_count=sum(1 for p in data.get('sample',[]) if p.get('official_matches'))
 
     lines=[
-        "広島 民泊候補物件 第8.2弾レポート",
+        "広島 民泊候補物件 第8.3弾レポート",
         "="*52,
         "",
         f"取得した生データ：{data.get('total_raw',0)}件",
         f"重複統合後：{data.get('total_retrieved',0)}件",
-        f"第8弾の候補：{candidates}件",
+        f"今回の候補：{candidates}件",
+        f"累計抽出候補：{len(data.get('all_candidates', []))}件",
+        f"現在掲載候補：{len(data.get('active_candidates', []))}件",
+        f"未確認候補：{len(data.get('unreviewed_candidates', []))}件",
         f"今回の新着：{len(new)}件",
         f"家賃値下げ：{len(down)}件",
         f"広島市公式一覧DB：{official_records}レコード / 取得成功{official_ok}系統",
@@ -95,9 +98,16 @@ def send_report(data):
         for i,p in enumerate(down,1): add_property(lines,p,i)
     else:
         lines.append("該当なし")
-    if not new and not down:
-        lines += ["", "【現在取得できている候補（最大20件）】", "-"*52]
-        for i,p in enumerate(data.get('sample',[])[:20],1): add_property(lines,p,i)
+    lines += ["", "【累計抽出候補（全件）】", "-"*52]
+    lines.append("※過去に抽出した候補も、ユーザー確認済みになるまで除外しません。")
+    lines.append("※「未確認」は検索システムが自動判定した状態で、民泊可否を意味しません。")
+    all_candidates = data.get("all_candidates", [])
+    if all_candidates:
+        for i,p in enumerate(all_candidates,1):
+            lines.append(f"{i}. 確認状態：{p.get('review_status','未確認')} / 掲載状態：{'現在取得' if p.get('active') else '今回未取得'} / 初回抽出：{p.get('first_seen_at','')}")
+            add_property(lines,p,i)
+    else:
+        lines.append("該当なし")
     lines += [
         "",
         "="*52,
@@ -107,9 +117,11 @@ def send_report(data):
         "※『公式一覧に一致』は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
         "※賃貸借契約、管理規約、所有者・管理会社の承諾、消防・建築・条例等は別途確認してください。",
         "※同一物件と思われる掲載は住所・家賃・間取り・面積等で統合しています。",
+        "※確認状態は review_status / review_notes として候補台帳に保存されます。初期値は「未確認」です。",
+        "※ユーザーが確認済み・対象外と変更した候補は、検索結果から自動削除せず履歴として保持します。",
     ]
     msg=MIMEText("\n".join(lines),"plain","utf-8")
-    msg["Subject"]=f"広島民泊 第8.2弾 候補{candidates}件 / 新着{len(new)}件 / 公式照合精密化"
+    msg["Subject"]=f"広島民泊 第8.3弾 累計{len(data.get("all_candidates", []))}件 / 未確認{len(data.get("unreviewed_candidates", []))}件"
     msg["From"]=user; msg["To"]=to
     with smtplib.SMTP_SSL("smtp.gmail.com",465) as smtp:
         smtp.login(user,password); smtp.send_message(msg)
