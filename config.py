@@ -1,34 +1,28 @@
-AREAS = {
-    "中区": {
-        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinaka/",
-        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
-        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_naka-city/",
-    },
-    "南区": {
-        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashiminami/",
-        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_minami-city/list/",
-        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_minami-city/",
-    },
-    "西区": {
-        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinishi/",
-        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_nishi-city/list/",
-        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_nishi-city/",
-    },
-    "東区": {
-        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashihigashi/",
-        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_higashi-city/list/",
-        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_higashi-city/",
-    },
-}
-MAX_RENT = 100000
-REQUEST_TIMEOUT_MS = 45000
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36"
-SEEN_FILE = "seen.json"
-PRICE_FILE = "price_history.json"
-DIAG_FILE = "diagnostics.json"
-CANDIDATE_HISTORY_FILE = "candidate_history.json"
-OFFICIAL_DB_FILE = "official_db.json"
-OFFICIAL_PAGES = {
-    "minpaku": "https://www.city.hiroshima.lg.jp/business/seikatsu-eisei/1026705/1013508.html",
-    "ryokan": "https://www.city.hiroshima.lg.jp/business/seikatsu-eisei/1026702/1013507.html",
+import os
+
+EMAIL_USER = os.environ.get('EMAIL_USER', '')
+EMAIL_PASS = os.environ.get('EMAIL_PASS', '')
+EMAIL_TO = os.environ.get('EMAIL_TO', '')
+
+RENT_MAX = 100000
+TARGET_WARDS = ['中区', '南区', '西区', '東区']
+SITES = ['suumo', 'homes', 'athome']
+
+# 1 runあたりの取得件数上限。検索サイト側のページングがあるため、十分大きくする。
+MAX_RAW_PER_SITE_WARD = 100
+
+# 取得失敗判定。本文が短い場合は検索URLを変えて再試行する。
+MIN_BODY_CHARS = 1200
+RETRY_COUNT = 3
+
+# Playwright
+PAGE_TIMEOUT_MS = 30000
+WAIT_AFTER_GOTO_MS = 1800
+
+STATE_FILES = {
+    'seen': 'seen.json',
+    'price': 'price_history.json',
+    'candidate': 'candidate_history.json',
+    'diagnostics': 'diagnostics.json',
+    'official': 'official_db.json',
 }
