@@ -5,14 +5,14 @@
     "title": "suumo",
     "building_name": "suumo",
     "address": "広島市中区で賃貸住宅[賃貸マンション・賃貸アパート]を借りるなら、お部屋探し物件",
-    "room": "7060",
-    "rent": 83000,
-    "area": 36.95,
+    "room": "6760",
+    "rent": 79000,
+    "area": 27.91,
     "kind": "戸建て系",
     "url": "https://www.recruit.co.jp/",
     "reasons": [
       "戸建・一戸建・タウンハウス等",
-      "家賃10万円以下"
+      "家賃8万円以下"
     ],
     "official_match": {
       "match_type": "none",
@@ -20,7 +20,7 @@
     },
     "key": "https://www.recruit.co.jp/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -31,14 +31,14 @@
     "title": "採用情報",
     "building_name": "採用情報",
     "address": "広島市中区で賃貸住宅[賃貸マンション・賃貸アパート]を借りるなら、お部屋探し物件",
-    "room": "7060",
-    "rent": 83000,
-    "area": 36.95,
+    "room": "6760",
+    "rent": 79000,
+    "area": 27.91,
     "kind": "戸建て系",
     "url": "https://www.recruit.co.jp/employment/",
     "reasons": [
       "戸建・一戸建・タウンハウス等",
-      "家賃10万円以下"
+      "家賃8万円以下"
     ],
     "official_match": {
       "match_type": "none",
@@ -46,7 +46,7 @@
     },
     "key": "https://www.recruit.co.jp/employment/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -57,9 +57,9 @@
     "title": "最近見た物件",
     "building_name": "最近見た物件",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/mypage/bukken-history",
     "reasons": [
@@ -72,7 +72,7 @@
     },
     "key": "https://www.homes.co.jp/mypage/bukken-history",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -83,9 +83,9 @@
     "title": "お気に入り",
     "building_name": "お気に入り",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/mypage/favorite",
     "reasons": [
@@ -98,7 +98,7 @@
     },
     "key": "https://www.homes.co.jp/mypage/favorite",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -109,9 +109,9 @@
     "title": "※評価について",
     "building_name": "※評価について",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://inquiry.homes.co.jp/bukkensendo",
     "reasons": [
@@ -124,7 +124,7 @@
     },
     "key": "https://inquiry.homes.co.jp/bukkensendo",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -135,9 +135,9 @@
     "title": "不動産・住宅情報サイトLIFULL HOME'S",
     "building_name": "不動産・住宅情報サイトLIFULL HOME'S",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/",
     "reasons": [
@@ -150,7 +150,7 @@
     },
     "key": "https://www.homes.co.jp/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -161,9 +161,9 @@
     "title": "賃貸",
     "building_name": "賃貸",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/chintai/",
     "reasons": [
@@ -176,7 +176,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -187,9 +187,9 @@
     "title": "中国・四国",
     "building_name": "中国・四国",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/chintai/chugoku/",
     "reasons": [
@@ -202,7 +202,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/chugoku/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -228,7 +228,7 @@
     },
     "key": "https://www.homes.co.jp/callcenter/?utm_source=v5sp&utm_medium=own&utm_campaign=callcenter_v5pclist_00",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -254,7 +254,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/imayori/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -280,7 +280,7 @@
     },
     "key": "https://www.homes.co.jp/mansion/shinchiku/special/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -291,9 +291,9 @@
     "title": "すべての特集を見る",
     "building_name": "すべての特集を見る",
     "address": "広島市中区の賃貸(賃貸マンション・アパート)",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/chintai/theme/",
     "reasons": [
@@ -306,7 +306,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/theme/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -317,9 +317,9 @@
     "title": "プライバシーポリシー",
     "building_name": "プライバシーポリシー",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://lifull.com/privacy/",
     "reasons": [
@@ -332,7 +332,7 @@
     },
     "key": "https://lifull.com/privacy/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -343,9 +343,9 @@
     "title": "ログインする",
     "building_name": "ログインする",
     "address": "広島市>中区の賃貸 物件一覧",
-    "room": "810",
-    "rent": 68000,
-    "area": 34.23,
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
     "kind": "戸建て系",
     "url": "https://www.homes.co.jp/authbase/authorize/",
     "reasons": [
@@ -358,7 +358,7 @@
     },
     "key": "https://www.homes.co.jp/authbase/authorize/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -384,7 +384,7 @@
     },
     "key": "https://app.adjust.com/raum0dv?redirect=https%3a%2f%2fwww%2eathome%2eco%2ejp%2fservice%2fapp%2f&campaign=athome_pc&adgroup=lp_service_app",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -489,7 +489,7 @@
     "key": "https://www.homes.co.jp/chintai/room/f90e33b12bd4b9769ad93e4008119b477c8c0f7a/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
     "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
-    "listing_status": "現在取得",
+    "listing_status": "現在未取得",
     "review_status": "未確認",
     "review_notes": ""
   },
@@ -514,7 +514,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/8a25e3957a6da2dcbc0c5bd4283ca343972df123/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -540,7 +540,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/76087416d442fc96f72e2a9a7bb8f75f193d9f67/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -566,7 +566,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/f530640baa301662662f6ca31ae55346803d6506/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -619,7 +619,7 @@
     "key": "https://www.homes.co.jp/chintai/room/22684cb92f76f72d93f029057cab5f8fd4b341cb/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
     "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
-    "listing_status": "現在取得",
+    "listing_status": "現在未取得",
     "review_status": "未確認",
     "review_notes": ""
   },
@@ -644,7 +644,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/735870689d6b8713d20133e4910aed08fe14f313/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -670,7 +670,7 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/fed0d01af21c4e70cc0cf8fac137ddb06cffeb23/",
     "first_seen_at": "2026-10-01T13:48:22.500865+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
@@ -748,7 +748,33 @@
     },
     "key": "https://www.homes.co.jp/chintai/room/7c12714ba46fe6dc167fb49b5f9c36cd73b6a44d/",
     "first_seen_at": "2026-10-05T23:15:25.547105+00:00",
-    "last_seen_at": "2026-10-05T23:15:25.547105+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
+    "listing_status": "現在取得",
+    "review_status": "未確認",
+    "review_notes": ""
+  },
+  {
+    "site": "homes",
+    "ward": "中区",
+    "title": "したい暮らしのタグを見る",
+    "building_name": "したい暮らしのタグを見る",
+    "address": "広島市中区の賃貸(賃貸マンション・アパート)",
+    "room": "832",
+    "rent": 80000,
+    "area": 30.82,
+    "kind": "戸建て系",
+    "url": "https://www.homes.co.jp/chintai/ltag/",
+    "reasons": [
+      "集合住宅（公式DB照合対象）",
+      "家賃8万円以下"
+    ],
+    "official_match": {
+      "match_type": "none",
+      "matches": []
+    },
+    "key": "https://www.homes.co.jp/chintai/ltag/",
+    "first_seen_at": "2026-10-06T23:16:29.680067+00:00",
+    "last_seen_at": "2026-10-06T23:16:29.680067+00:00",
     "listing_status": "現在取得",
     "review_status": "未確認",
     "review_notes": ""
