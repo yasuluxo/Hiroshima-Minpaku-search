@@ -1,71 +1,71 @@
 {
-  "updated_at": "2026-10-15T23:23:08.898320+00:00",
+  "updated_at": "2026-10-16T23:23:47.118527+00:00",
   "sites": {
     "suumo / 中区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinaka/?sort=1&cb=0.0&ct=10.0",
-          "body": 13943,
+          "body": 14030,
           "raw": 2
         }
       ],
-      "body": 13943
+      "body": 14030
     },
     "homes / 中区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
-          "body": 22542,
-          "raw": 81
+          "body": 21615,
+          "raw": 51
         }
       ],
-      "body": 22542
+      "body": 21615
     },
     "athome / 中区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
-          "body": 13727,
+          "body": 14000,
           "raw": 1
         }
       ],
-      "body": 13727
+      "body": 14000
     },
     "suumo / 南区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashiminami/?sort=1&cb=0.0&ct=10.0",
-          "body": 15705,
+          "body": 15635,
           "raw": 2
         }
       ],
-      "body": 15705
+      "body": 15635
     },
     "homes / 南区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_minami-city/list/",
-          "body": 21058,
-          "raw": 64
+          "body": 22424,
+          "raw": 73
         }
       ],
-      "body": 21058
+      "body": 22424
     },
     "athome / 南区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_minami-city/list/",
-          "body": 13628,
+          "body": 13293,
           "raw": 1
         }
       ],
-      "body": 13628
+      "body": 13293
     },
     "suumo / 西区": {
       "status": "RETRIEVAL_ZERO",
@@ -88,55 +88,55 @@
       "attempts": [
         {
           "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_nishi-city/list/",
-          "body": 20844,
-          "raw": 43
+          "body": 20619,
+          "raw": 41
         }
       ],
-      "body": 20844
+      "body": 20619
     },
     "athome / 西区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_nishi-city/list/",
-          "body": 13329,
+          "body": 13408,
           "raw": 1
         }
       ],
-      "body": 13329
+      "body": 13408
     },
     "suumo / 東区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashihigashi/?sort=1&cb=0.0&ct=10.0",
-          "body": 13319,
+          "body": 12891,
           "raw": 2
         }
       ],
-      "body": 13319
+      "body": 12891
     },
     "homes / 東区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_higashi-city/list/",
-          "body": 17818,
-          "raw": 46
+          "body": 18253,
+          "raw": 52
         }
       ],
-      "body": 17818
+      "body": 18253
     },
     "athome / 東区": {
       "status": "OK",
       "attempts": [
         {
           "url": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_higashi-city/list/",
-          "body": 12819,
+          "body": 12675,
           "raw": 1
         }
       ],
-      "body": 12819
+      "body": 12675
     }
   }
 }
