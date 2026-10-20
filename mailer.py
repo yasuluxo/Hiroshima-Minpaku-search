@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.9"
+VERSION = "8.10"
 
 
 def yen(v):
@@ -62,6 +62,8 @@ def send_report(data):
         f"・集合住宅：{stage.get('apartments',0)}件",
         f"・種別不明：{stage.get('unknown',0)}件",
         f"・詳細ページ取得エラー：{stage.get('detail_errors',0)}件",
+        f"・集合住宅の公式DB照合対象：{data.get('official_probe_summary',{}).get('apartment_records_checked',0)}件",
+        f"・集合住宅の公式DB一致：{data.get('official_probe_summary',{}).get('matched',0)}件 / 不一致：{data.get('official_probe_summary',{}).get('unmatched',0)}件",
         "",
         "【サイト別取得・判定状況】",
         "・戸建て系：SUUMO / HOME'S / at home を広く検索",
@@ -95,7 +97,7 @@ def send_report(data):
     lines += [
         "",
         "="*56,
-        "※第8.9弾では、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・採用を分離して記録し、どこで候補が減ったかを確認できるようにしています。",
+        "※第8.10弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
         "※集合住宅は、現在取得した広島市公式一覧との明確な一致が必要です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
