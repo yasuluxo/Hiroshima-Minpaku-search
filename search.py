@@ -1,383 +1,429 @@
-from __future__ import annotations
-
 import json
 import re
 import time
-from datetime import datetime, timezone
-from pathlib import Path
-from urllib.parse import urlencode, urljoin
+import html as html_lib
+import unicodedata
+from urllib.parse import urljoin, quote
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
-from config import (MAX_RAW_PER_SITE_WARD, MIN_BODY_CHARS, PAGE_TIMEOUT_MS,
-                    RENT_MAX, RETRY_COUNT, TARGET_WARDS)
-from mailer import send_email
-from official_db import load_official_db, match_candidate, update_official_db
-
-ROOT = Path(__file__).resolve().parent
-SEEN_PATH = ROOT / 'seen.json'
-PRICE_PATH = ROOT / 'price_history.json'
-CAND_PATH = ROOT / 'candidate_history.json'
-DIAG_PATH = ROOT / 'diagnostics.json'
-
-WARD_SLUGS = {
-    '中区': {'suumo': 'sc_hiroshimashinaka', 'homes': 'hiroshima_naka-city', 'athome': 'hiroshima_naka-city'},
-    '南区': {'suumo': 'sc_hiroshimashiminami', 'homes': 'hiroshima_minami-city', 'athome': 'hiroshima_minami-city'},
-    '西区': {'suumo': 'sc_hiroshimashinishiku', 'homes': 'hiroshima_nishi-city', 'athome': 'hiroshima_nishi-city'},
-    '東区': {'suumo': 'sc_hiroshimashihigashi', 'homes': 'hiroshima_higashi-city', 'athome': 'hiroshima_higashi-city'},
-}
-
-SEARCH_URLS = {
-    'suumo': lambda w: f"https://suumo.jp/chintai/hiroshima/{WARD_SLUGS[w]['suumo']}/?sort=1&cb=0.0&ct=10.0",
-    'homes': lambda w: f"https://www.homes.co.jp/chintai/hiroshima/{WARD_SLUGS[w]['homes']}/list/",
-    'athome': lambda w: f"https://www.athome.co.jp/chintai/hiroshima/{WARD_SLUGS[w]['athome']}/list/",
-}
-
-REAL_URL_RE = re.compile(r'^https?://', re.I)
-PRICE_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(?:万円|万)')
-AREA_RE = re.compile(r'(\d+(?:\.\d+)?)\s*(?:㎡|m2|m²)')
+from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE, CANDIDATE_FILE
+from official_db import build_official_db, match_official
+from mailer import send_report
 
 
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
+def load_json(path, default):
     try:
-        return json.loads(path.read_text(encoding='utf-8'))
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
     except Exception:
         return default
 
 
-def save_json(path: Path, data):
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+def save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def norm(s: str) -> str:
-    return re.sub(r'\s+', '', (s or '').replace('　', ' ')).lower()
+def norm(s):
+    s = unicodedata.normalize("NFKC", s or "").lower()
+    s = re.sub(r"\s+", "", s)
+    s = re.sub(r"[【】「」『』（）()［］\[\]・,，。:：/／_\\-]", "", s)
+    return s
 
 
-def parse_price(text: str) -> int | None:
-    m = PRICE_RE.search(text or '')
-    if not m:
-        m2 = re.search(r'(\d{2,6})\s*円', text or '')
-        return int(m2.group(1)) if m2 else None
-    return int(float(m.group(1)) * 10000)
+def clean_text(s):
+    s = html_lib.unescape(s or "")
+    s = re.sub(r"<[^>]+>", " ", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
 
 
-def extract_room(text: str) -> str:
-    m = re.search(r'(?<!\d)(\d{3,4})\s*(?:号室|号)?', text or '')
-    return m.group(1) if m else ''
+def clean_title(s):
+    t = clean_text(s)
+    if not t or len(t) > 120:
+        return ""
+    if re.search(r"javascript:|onclick=|class=|https?://", t, re.I):
+        return ""
+    bad = ["最近見た物件", "お気に入り", "採用情報", "プライバシー", "ログイン", "検索条件", "相場情報", "人気物件ランキング", "アットホームアプリ", "不動産・住宅情報サイト"]
+    if any(x in t for x in bad):
+        return ""
+    return re.sub(r"\s+", " ", t).strip(" -|｜")
 
 
-def classify_house(text: str) -> str:
-    t = text or ''
-    if re.search(r'一戸建|戸建|貸家|タウンハウス|メゾネット|テラスハウス', t):
-        return '戸建て系'
-    if re.search(r'マンション|アパート|ハイツ|コーポ|レジデンス|ビル|団地', t):
-        return '集合住宅'
-    return 'その他'
+def parse_rent(text):
+    t = clean_text(text).replace(",", "").replace("，", "")
+    m = re.search(r"(\d+(?:\.\d+)?)\s*万円", t)
+    if m:
+        return int(float(m.group(1)) * 10000)
+    m = re.search(r"(\d{4,7})\s*円", t)
+    return int(m.group(1)) if m else None
 
 
-def likely_candidate(item: dict) -> tuple[bool, list[str]]:
-    text = item['text']
-    price = item.get('rent')
-    if price is None or price > RENT_MAX:
-        return False, []
-    kind = classify_house(text)
-    reasons = []
-    if kind == '戸建て系':
-        reasons.append('戸建・一戸建・タウンハウス等')
-    elif kind == '集合住宅':
-        reasons.append('集合住宅（公式DB照合対象）')
-    else:
-        reasons.append('種別判定要確認')
-    if price <= 60000:
-        reasons.append('家賃6万円以下')
-    elif price <= 80000:
-        reasons.append('家賃8万円以下')
-    else:
-        reasons.append('家賃10万円以下')
-    return True, reasons
+def parse_area(text):
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:m²|m2|㎡)", clean_text(text).replace(",", ""))
+    return float(m.group(1)) if m else None
 
 
-def extract_items(page, site: str, ward: str) -> list[dict]:
-    # 一覧ページのアンカーから「実在URL」を持つものだけを拾う。javascript:void(0)は絶対に採用しない。
-    anchors = page.locator('a').all()
-    out = []
-    seen_urls = set()
-    for a in anchors:
+def parse_layout(text):
+    t = clean_text(text)
+    m = re.search(r"(ワンルーム|[1-5](?:LDK|DK|K|LK)(?:[+＋]S)?|[1-5]S?LDK)", t)
+    return m.group(1) if m else ""
+
+
+def extract_address(text, area):
+    t = clean_text(text)
+    # Prefer an address with a block/lot/number. Town-only strings are not enough
+    # for official matching, but are retained as a weak listing address.
+    patterns = [
+        r"(広島県?広島市(?:中|東|南|西)区[^\s,、|]+)",
+        r"(広島市(?:中|東|南|西)区[^\s,、|]+)",
+    ]
+    for pat in patterns:
+        for m in re.finditer(pat, t):
+            value = m.group(1).strip(" -")
+            if area in value and re.search(r"\d+番|\d+号|\d+-\d+|\d+丁目", value):
+                return value
+    # Some sites print the ward/town without the city prefix.
+    m = re.search(rf"({re.escape(area)}[^\s,、|]+)", t)
+    if m:
+        return m.group(1).strip(" -")
+    return ""
+
+
+def make_canonical_id(p):
+    address = norm(p.get("address"))
+    title = norm(p.get("title"))
+    rent = p.get("rent") or 0
+    layout = norm(p.get("layout"))
+    size = round(float(p.get("size") or 0), 1)
+    area = p.get("area", "")
+    if address:
+        return f"addr|{address}|{rent}|{layout}|{size}|{area}"
+    return f"text|{title}|{rent}|{layout}|{size}|{area}"
+
+
+def classify_kind(text):
+    t = clean_text(text)
+    if re.search(r"賃貸一戸建て|一戸建て|一戸建|貸家", t):
+        return "戸建て系"
+    if re.search(r"テラスハウス|タウンハウス|長屋", t):
+        return "戸建て系"
+    if re.search(r"賃貸アパート|アパート", t):
+        return "集合住宅"
+    if re.search(r"賃貸マンション|マンション", t):
+        return "集合住宅"
+    if re.search(r"メゾネット", t):
+        return "集合住宅"
+    return "不明"
+
+
+def is_detached_property(p):
+    return p.get("property_kind") == "戸建て系"
+
+
+def score_property(p):
+    text = " ".join([p.get("title", ""), p.get("description", ""), p.get("property_label", "")])
+    score, reasons = 0, []
+    for word, pts in [("戸建", 3), ("一戸建", 3), ("貸家", 3), ("テラスハウス", 2), ("タウンハウス", 2), ("木造", 2), ("SOHO", 2), ("事務所可", 2), ("駐車場", 1), ("ペット", 1)]:
+        if word in text:
+            score += pts
+            reasons.append(word)
+    rent = p.get("rent")
+    if rent and rent <= 60000:
+        score += 2; reasons.append("家賃6万円以下")
+    elif rent and rent <= 80000:
+        score += 1; reasons.append("家賃8万円以下")
+    score = min(score, 5)
+    return "★" * score + "☆" * (5 - score), "・".join(dict.fromkeys(reasons))
+
+
+def looks_like_property(text):
+    t = clean_text(text)
+    return len(t) >= 20 and bool(parse_rent(t)) and bool(parse_area(t)) and bool(parse_layout(t) or re.search(r"賃貸(?:一戸建て|アパート|マンション|テラスハウス|タウンハウス)", t))
+
+
+def valid_property_url(source, full):
+    if not full or full.startswith("javascript:"):
+        return False
+    low = full.lower()
+    if source == "suumo":
+        return "suumo.jp" in low and "/chintai/" in low and not any(x in low for x in ["/search/", "?from=", "/sc_"])
+    if source == "homes":
+        return "homes.co.jp/chintai/room/" in low
+    if source == "athome":
+        # AtHome property detail URLs are numeric under /chintai/. Navigation pages
+        # contain words such as souba/ranking/mypage and are rejected.
+        return ("athome.co.jp/chintai/" in low and bool(re.search(r"/chintai/\d{7,}/", low)) and not any(x in low for x in ["souba", "ranking", "service", "app", "search", "mypage"]))
+    return False
+
+
+def title_from_card(text, anchor_text=""):
+    lines = [clean_text(x) for x in text.splitlines() if clean_text(x)]
+    bad_re = re.compile(r"(?:お気に入り|追加|詳細を見る|お問い合わせ|無料|築\d+年|地上\d+階|\d+階|徒歩|歩\d+分|敷金|礼金|管理費|共益費|万円|円$|m²|m2|㎡|間取り|動画|パノラマ|入力|チェック|この物件)")
+    # A line immediately following a property-type label is usually the building name.
+    for i, line in enumerate(lines):
+        if re.fullmatch(r"(?:賃貸)?(?:一戸建て|アパート|マンション|テラスハウス|タウンハウス)", line):
+            for nxt in lines[i+1:i+4]:
+                if not bad_re.search(nxt) and clean_title(nxt):
+                    return clean_title(nxt)
+    # Otherwise choose a short non-UI line containing Japanese text.
+    for line in lines[:20]:
+        if clean_title(line) and not bad_re.search(line) and not re.search(r"^(広島県|広島市|中区|東区|南区|西区)", line):
+            if 2 <= len(line) <= 70:
+                return clean_title(line)
+    return clean_title(anchor_text)
+
+
+def make_item(source, area, title, txt, full, property_label=""):
+    title = clean_title(title)
+    return {
+        "source": source,
+        "area": area,
+        "title": title,
+        "rent": parse_rent(txt),
+        "layout": parse_layout(txt),
+        "size": parse_area(txt),
+        "address": extract_address(txt, area),
+        "url": full,
+        "description": clean_text(txt)[:1200],
+        "property_label": property_label or clean_text(txt)[:120],
+        "property_kind": classify_kind((property_label + " " + txt)),
+    }
+
+
+def scrape_suumo(page, area, url):
+    page.goto(url, wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
+    page.wait_for_timeout(1600)
+    cards = page.locator(".cassetteitem")
+    raw = cards.count(); items=[]; seen=set()
+    for i in range(raw):
         try:
-            href = a.get_attribute('href') or ''
-            txt = (a.inner_text(timeout=800) or '').strip()
-            aria = a.get_attribute('aria-label') or ''
-            title = a.get_attribute('title') or ''
-            data_href = a.get_attribute('data-href') or a.get_attribute('data-url') or ''
-            candidate_href = href if REAL_URL_RE.match(href) else data_href
-            if candidate_href and candidate_href.startswith('/'):
-                base = {'suumo':'https://suumo.jp','homes':'https://www.homes.co.jp','athome':'https://www.athome.co.jp'}[site]
-                candidate_href = urljoin(base, candidate_href)
-            if not REAL_URL_RE.match(candidate_href):
-                continue
-            low = candidate_href.lower()
-            if any(x in low for x in ['javascript:', '#', '/chintai/hiroshima/', '/search/', '/list/']) and site != 'suumo':
-                # 詳細URLでない可能性が高いが、下のテキスト/親カードで補完する
-                continue
-            if candidate_href in seen_urls:
-                continue
-            # 親カードを最大6段階まで上り、物件情報をまとめる
-            card_text = txt
-            locator = a
-            for _ in range(6):
-                try:
-                    locator = locator.locator('..')
-                    ptxt = locator.inner_text(timeout=500) or ''
-                    if len(ptxt) > len(card_text):
-                        card_text = ptxt
-                    if len(card_text) >= 80 and (PRICE_RE.search(card_text) or '万円' in card_text):
-                        break
-                except Exception:
-                    break
-            if not (PRICE_RE.search(card_text) or '円' in card_text):
-                continue
-            rent = parse_price(card_text)
-            if rent is None or rent > RENT_MAX:
-                continue
-            # 物件名候補：anchor textを優先し、短すぎる場合はカード冒頭を利用
-            name = txt.strip() or title.strip() or aria.strip()
-            if not name or len(name) < 2:
-                lines = [x.strip() for x in card_text.splitlines() if x.strip()]
-                name = next((x for x in lines if len(x) >= 2), '')
-            area_m = AREA_RE.search(card_text)
-            area = float(area_m.group(1)) if area_m else None
-            room = extract_room(card_text)
-            kind = classify_house(card_text)
-            # 住所は広島市の区名から、町丁目を含む文字列を拾う
-            addr = ''
-            maddr = re.search(r'(?:広島県)?広島市[^\n]+?区[^\n]{0,35}', card_text)
-            if maddr:
-                addr = maddr.group(0).strip()
-            item = {
-                'site': site, 'ward': ward, 'title': name[:200], 'building_name': name[:150],
-                'address': addr, 'room': room, 'rent': rent, 'area': area,
-                'kind': kind, 'url': candidate_href, 'text': card_text[:3000]
-            }
-            ok, reasons = likely_candidate(item)
-            if ok:
-                item['reasons'] = reasons
-                out.append(item)
-                seen_urls.add(candidate_href)
-            if len(out) >= MAX_RAW_PER_SITE_WARD:
-                break
-        except Exception:
-            continue
+            c=cards.nth(i); txt=clean_text(c.inner_text())
+            if not looks_like_property(txt): continue
+            links=c.locator("a")
+            href=""
+            for j in range(min(links.count(),10)):
+                h=links.nth(j).get_attribute("href") or ""
+                full=urljoin(page.url,h).split("#")[0]
+                if valid_property_url("suumo",full): href=full; break
+            if not href or href in seen: continue
+            title=clean_title(c.locator(".cassetteitem_content-title").first.inner_text()) if c.locator(".cassetteitem_content-title").count() else title_from_card(txt)
+            renttxt=c.locator(".cassetteitem_price--rent").first.inner_text() if c.locator(".cassetteitem_price--rent").count() else txt
+            layout=c.locator(".cassetteitem_madori").first.inner_text() if c.locator(".cassetteitem_madori").count() else parse_layout(txt)
+            sizetxt=c.locator(".cassetteitem_menseki").first.inner_text() if c.locator(".cassetteitem_menseki").count() else txt
+            addr=extract_address(txt,area)
+            item={"source":"SUUMO","area":area,"title":title,"rent":parse_rent(renttxt),"layout":clean_text(layout),"size":parse_area(sizetxt),"address":addr,"url":href,"description":txt,"property_label":title_from_card(txt),"property_kind":classify_kind(txt)}
+            if item["rent"] is None or item["size"] is None: continue
+            seen.add(href); items.append(item)
+        except Exception: pass
+    return items, raw
+
+
+def scrape_homes(page, area, url):
+    page.goto(url, wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
+    page.wait_for_timeout(2200)
+    links=page.locator('a[href*="/chintai/room/"]')
+    raw=links.count(); items=[]; seen=set()
+    for i in range(raw):
+        try:
+            a=links.nth(i); h=a.get_attribute("href") or ""; full=urljoin(page.url,h).split("#")[0]
+            if not valid_property_url("homes",full) or full in seen: continue
+            card=a.locator("xpath=ancestor::li[1]")
+            if card.count()==0: card=a.locator("xpath=ancestor::article[1]")
+            if card.count()==0: card=a.locator("xpath=ancestor::div[1]")
+            txt=clean_text(card.inner_text(timeout=2500)) if card.count() else clean_text(a.inner_text())
+            # If the first ancestor is too small, climb a few levels, but never
+            # beyond a bounded card-sized block.
+            if not looks_like_property(txt):
+                cur=a
+                for _ in range(5):
+                    cur=cur.locator("xpath=..")
+                    t=clean_text(cur.inner_text(timeout=1500))
+                    if looks_like_property(t) and len(t)<5000:
+                        txt=t; break
+            if not looks_like_property(txt): continue
+            title=title_from_card(txt,a.inner_text())
+            item=make_item("HOME'S",area,title,txt,full)
+            if item["rent"] is None or item["size"] is None: continue
+            seen.add(full); items.append(item)
+        except Exception: pass
+    return items, raw
+
+
+def scrape_athome(page, area, url):
+    page.goto(url, wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
+    page.wait_for_timeout(2200)
+    links=page.locator('a[href*="/chintai/"]')
+    raw=links.count(); items=[]; seen=set()
+    for i in range(raw):
+        try:
+            a=links.nth(i); h=a.get_attribute("href") or ""; full=urljoin(page.url,h).split("#")[0]
+            if not valid_property_url("athome",full) or full in seen: continue
+            cur=a; txt=""
+            for _ in range(5):
+                cur=cur.locator("xpath=..")
+                t=clean_text(cur.inner_text(timeout=1500))
+                if looks_like_property(t) and len(t)<5000:
+                    txt=t; break
+            if not txt: continue
+            title=title_from_card(txt,a.inner_text())
+            item=make_item("at home",area,title,txt,full)
+            if item["rent"] is None or item["size"] is None: continue
+            seen.add(full); items.append(item)
+        except Exception: pass
+    return items, raw
+
+
+def enrich_from_detail(context, p):
+    """Fetch a bounded detail page to recover full address/type/name for matching."""
+    page=context.new_page()
+    try:
+        page.goto(p["url"],wait_until="domcontentloaded",timeout=20000)
+        page.wait_for_timeout(900)
+        text=clean_text(page.locator("body").inner_text(timeout=5000))
+        if len(text)<100: return p
+        addr=extract_address(text,p.get("area",""))
+        if addr and re.search(r"\d+番|\d+号|\d+-\d+|\d+丁目",addr): p["address"]=addr
+        if not p.get("layout"): p["layout"]=parse_layout(text)
+        if not p.get("size"): p["size"]=parse_area(text)
+        if not p.get("rent"): p["rent"]=parse_rent(text)
+        label=re.search(r"(賃貸一戸建て|賃貸アパート|賃貸マンション|賃貸テラスハウス|賃貸タウンハウス)",text)
+        if label: p["property_label"]=label.group(1); p["property_kind"]=classify_kind(text)
+        title=title_from_card(text,p.get("title",""))
+        if title and len(title)>1: p["title"]=title
+        p["description"]=text[:1600]
+        return p
+    except Exception:
+        return p
+    finally:
+        try: page.close()
+        except Exception: pass
+
+
+def dedupe(items):
+    groups={}
+    for p in items:
+        p["id"]=make_canonical_id(p); groups.setdefault(p["id"],[]).append(p)
+    out=[]
+    for cid,group in groups.items():
+        group.sort(key=lambda x:(bool(re.search(r"\d+番|\d+号|\d+-\d+|\d+丁目",x.get("address",''))),len(x.get("description",'')),x.get("source",'')),reverse=True)
+        p=group[0].copy(); p["source_urls"]=[{"source":x.get("source"),"url":x.get("url")} for x in group if x.get("url")]; p["duplicate_count"]=len(group); out.append(p)
     return out
 
 
-def retrieve(page, site: str, ward: str) -> tuple[list[dict], dict]:
-    urls = [SEARCH_URLS[site](ward)]
-    # HOME'S/at homeは /list/ なし・パラメータ付きも試す。サイト側のリダイレクト/短本文対策。
-    base = urls[0]
-    if site == 'homes':
-        urls += [base.replace('/list/', '/'), base + '?sort=price']
-    elif site == 'athome':
-        urls += [base.replace('/list/', '/'), base + '?sort=price']
+def filter_candidates(items, official_db):
+    out=[]; db_ready=bool(official_db.get("records")) and all(x.get("status")=="OK" for x in official_db.get("diagnostics",[]))
+    for p in items:
+        if p.get("rent") is None or p["rent"]>MAX_RENT: continue
+        # Unknown/malformed kind is not a candidate. This prevents navigation links
+        # from becoming "戸建て系" merely because nearby card text had a price.
+        kind=p.get("property_kind")
+        if kind not in ("戸建て系","集合住宅"): continue
+        p["address_quality"]="OK" if re.search(r"\d+番|\d+号|\d+-\d+|\d+丁目",p.get("address",'')) else "LOW"
+        matches=[]
+        if kind=="集合住宅":
+            if not db_ready or p["address_quality"]!="OK": continue
+            matches=match_official(p,official_db)
+            if not matches: continue
+        elif db_ready and p["address_quality"]=="OK":
+            matches=match_official(p,official_db)
+        p["official_matches"]=matches
+        p["official_match_count"]=len(matches)
+        p["official_types"]=sorted(set(x.get("type","") for x in matches))
+        p["score"],p["comment"]=score_property(p)
+        if matches:
+            rank={"部屋番号一致":3,"住所一致":2,"建物名一致":1}
+            p["official_match_level"]=max((x.get("match_level","") for x in matches),key=lambda x:rank.get(x,0))
+            p["comment"]=(p.get("comment","")+"・" if p.get("comment") else "")+"広島市公式一覧："+p["official_match_level"]
+        p["map"]="https://www.google.com/maps/search/?api=1&query="+quote(p.get("address") or f"{p.get('area','')} {p.get('title','')}")
+        out.append(p)
+    out.sort(key=lambda x:(-sum(c=="★" for c in x.get("score","")),x.get("rent") or 999999,x.get("area","")))
+    return out
+
+
+def update_history(candidates):
+    hist=load_json(CANDIDATE_FILE,{})
+    if isinstance(hist, dict):
+        raw_records=hist.get("records", {})
+        if isinstance(raw_records, dict):
+            records=dict(raw_records)
+        elif isinstance(raw_records, list):
+            records={x.get("id"): x for x in raw_records if isinstance(x,dict) and x.get("id")}
+        else:
+            records={}
+    elif isinstance(hist, list):
+        # Backward-compatible migration for an older 8.3-style list.
+        records={x.get("id"): x for x in hist if isinstance(x,dict) and x.get("id")}
     else:
-        urls += [base + '&page=2']
-
-    attempts = []
-    for attempt in range(min(RETRY_COUNT, len(urls))):
-        url = urls[attempt]
-        try:
-            page.goto(url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT_MS)
-            page.wait_for_timeout(1800 + attempt * 1000)
-            # 画面下部まで一度スクロールし、遅延ロードを起こす。
-            for _ in range(3):
-                page.mouse.wheel(0, 1800)
-                page.wait_for_timeout(500)
-            body = page.locator('body').inner_text(timeout=5000) or ''
-            items = extract_items(page, site, ward)
-            attempts.append({'url': url, 'body': len(body), 'raw': len(items)})
-            if len(body) >= MIN_BODY_CHARS and items:
-                return items, {'status': 'OK', 'attempts': attempts, 'body': len(body)}
-            if len(body) >= MIN_BODY_CHARS and site in ('homes', 'athome'):
-                # 本文は取れているがパーサーが合わない場合、次URLを試す
-                continue
-        except (PlaywrightTimeoutError, Exception) as e:
-            attempts.append({'url': url, 'error': type(e).__name__})
-        time.sleep(1)
-    status = 'RETRIEVAL_ZERO' if attempts and all(x.get('raw', 0) == 0 for x in attempts) else 'ERROR'
-    return [], {'status': status, 'attempts': attempts, 'body': attempts[-1].get('body', 0) if attempts else 0}
+        records={}
+    now=time.strftime("%Y-%m-%dT%H:%M:%S+09:00")
+    for p in candidates:
+        old=records.get(p["id"],{})
+        merged=dict(old); merged.update(p)
+        merged["first_seen"]=old.get("first_seen",now); merged["last_seen"]=now
+        merged["review_status"]=old.get("review_status","未確認")
+        merged["review_notes"]=old.get("review_notes","")
+        records[p["id"]]=merged
+    hist={"version":"8.5","updated_at":now,"records":records}
+    save_json(CANDIDATE_FILE,hist)
+    return hist
 
 
-def candidate_key(x: dict) -> str:
-    # URL優先。URLがない候補でも建物+住所+部屋+家賃で安定化。
-    if x.get('url'):
-        return norm(x['url'])
-    return '|'.join(norm(str(x.get(k,''))) for k in ['site','ward','building_name','address','room','rent'])
-
-
-def merge_current(items: list[dict]) -> list[dict]:
-    d = {}
-    for x in items:
-        k = candidate_key(x)
-        if k not in d:
-            d[k] = x
-        else:
-            # URLや住所等の情報が豊富な方を残す
-            old = d[k]
-            for field in ['url','address','room','area','building_name']:
-                if not old.get(field) and x.get(field):
-                    old[field] = x[field]
-    return list(d.values())
-
-
-def update_candidate_history(current: list[dict], official_records: list[dict]) -> tuple[list[dict], list[dict]]:
-    history = load_json(CAND_PATH, [])
-    if not isinstance(history, list):
-        history = []
-    index = {h.get('key'): h for h in history if h.get('key')}
-    now = datetime.now(timezone.utc).astimezone().isoformat()
-    new_items = []
-    for x in current:
-        key = candidate_key(x)
-        m = match_candidate(x, official_records)
-        x2 = dict(x)
-        x2.pop('text', None)
-        x2['key'] = key
-        x2['official_match'] = m
-        if key in index:
-            h = index[key]
-            h.update({k:v for k,v in x2.items() if k not in ('first_seen_at','review_status','review_notes')})
-            h['last_seen_at'] = now
-            h['listing_status'] = '現在取得'
-            h.setdefault('review_status', '未確認')
-            h.setdefault('review_notes', '')
-        else:
-            x2['first_seen_at'] = now
-            x2['last_seen_at'] = now
-            x2['listing_status'] = '現在取得'
-            x2['review_status'] = '未確認'
-            x2['review_notes'] = ''
-            history.append(x2)
-            index[key] = x2
-            new_items.append(x2)
-    current_keys = {candidate_key(x) for x in current}
-    for h in history:
-        if h.get('key') not in current_keys and h.get('listing_status') == '現在取得':
-            h['listing_status'] = '現在未取得'
-    save_json(CAND_PATH, history)
-    return history, new_items
-
-
-def make_report(all_current: list[dict], history: list[dict], new_items: list[dict], diagnostics: dict, official_sources: dict) -> str:
-    counts = {k:0 for k in ['room','address','building','none']}
-    for x in all_current:
-        typ = x.get('official_match', {}).get('match_type', 'none')
-        if typ.startswith('room'): counts['room'] += 1
-        elif typ == 'address': counts['address'] += 1
-        elif typ == 'building': counts['building'] += 1
-        else: counts['none'] += 1
-
-    current_keys = {candidate_key(x) for x in all_current}
-    current_history = [h for h in history if h.get('key') in current_keys]
-    unreviewed = [h for h in history if h.get('review_status','未確認') == '未確認']
-
-    lines = [
-        '広島 民泊候補物件 第8.4弾レポート',
-        '='*56, '',
-        f"今回取得した候補：{len(all_current)}件",
-        f"累計抽出候補：{len(history)}件",
-        f"現在掲載候補：{len(current_history)}件",
-        f"未確認候補：{len(unreviewed)}件",
-        f"今回の新着：{len(new_items)}件",
-        '',
-        '【第8弾の検索ルール】',
-        '・戸建て系：SUUMO / HOME\'S / at home を広く検索',
-        '・アパート/マンション等：広島市公式の「民泊届出」または「旅館業許可」一覧と、住所または建物名が明確に一致するものだけ採用',
-        '・公式照合は町名だけの一致を採用しない',
-        '・公式照合は建物名の部分一致を採用しない',
-        '・部屋番号一致だけでは採用せず、建物名/住所の整合を確認',
-        '・公式照合は「部屋一致」「住所一致」「建物名一致」を区別',
-        '・家賃上限：10万円以下',
-        '',
-        '【広島市公式PDF取得状況】',
-        f"minpaku：{official_sources.get('minpaku',{})}",
-        f"ryokan：{official_sources.get('ryokan',{})}",
-        '',
-        '【サイト別取得状況】',
-    ]
-    for key, d in diagnostics.items():
-        lines.append(f"{key}：{d}")
-    if any(d.get('status') not in ('OK',) for d in diagnostics.values()):
-        lines += ['', '⚠ 取得0件・タイムアウト・エラーがあります。', 'これは物件0件とは限らず、取得側の問題の可能性があります。']
-
-    def render(title, arr):
-        lines.extend(['', title])
-        if not arr:
-            lines.append('該当なし')
-            return
-        for i,x in enumerate(arr,1):
-            stars = '★★★★★' if x.get('rent',0) <= 50000 else ('★★★★☆' if x.get('rent',0) <= 60000 else ('★★★☆☆' if x.get('rent',0) <= 80000 else '★★☆☆☆'))
-            rent = f"{x.get('rent',0):,}円"
-            lines.append(f"{i}. {stars} {x.get('ward','')} {rent}")
-            lines.append(f"   {x.get('title','')}")
-            lines.append(f"   種別：{x.get('kind','')} / 間取り：{x.get('layout','不明')} / 面積：{x.get('area') or '不明'}㎡")
-            lines.append(f"   注目点：{'・'.join(x.get('reasons',[])) or '条件該当'}")
-            u = x.get('url','')
-            lines.append(f"   {u if REAL_URL_RE.match(u) else '物件URL取得失敗（javascript:void(0)等は掲載しません）'}")
-    render('【新着（全件）】', new_items)
-    render('【今回取得候補（全件）】', all_current)
-    render('【累計抽出候補（全件）】', history)
-    lines += ['', f"公式照合：部屋一致{counts['room']} / 住所一致{counts['address']} / 建物名一致{counts['building']} / 不一致{counts['none']}", '', '※ review_status / review_notes は candidate_history.json で管理。確認済み候補も履歴から自動削除しません。']
-    return '\n'.join(lines)
+def detect_changes(candidates):
+    seen=load_json(SEEN_FILE,{}); prices=load_json(PRICE_FILE,{})
+    new_items=[]; price_down=[]
+    for p in candidates:
+        cid=p["id"]; old=prices.get(cid)
+        if cid not in seen and not (p.get("url") and p["url"] in seen): p["status"]="新着"; new_items.append(p)
+        if old is not None and p.get("rent") is not None and p["rent"]<old: p["old_price"]=old; p["status"]="値下げ"; price_down.append(p)
+        seen[cid]=True
+        if p.get("url"): seen[p["url"]]=True
+        if p.get("rent") is not None: prices[cid]=p["rent"]
+    save_json(SEEN_FILE,seen); save_json(PRICE_FILE,prices)
+    return new_items,price_down
 
 
 def main():
-    # 公式DBは毎回更新。取得失敗時も既存DBを使って検索を止めない。
-    try:
-        official_records, official_sources = update_official_db()
-    except Exception as e:
-        official_records = load_official_db()
-        official_sources = {'error': str(e)}
-
-    diagnostics = {}
-    all_items = []
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=['--disable-blink-features=AutomationControlled'])
-        context = browser.new_context(
-            locale='ja-JP',
-            timezone_id='Asia/Tokyo',
-            user_agent='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36',
-            viewport={'width': 1440, 'height': 1200},
-            extra_http_headers={'Accept-Language':'ja,en-US;q=0.9,en;q=0.8'},
-        )
-        page = context.new_page()
-        for ward in TARGET_WARDS:
-            for site in ['suumo','homes','athome']:
-                items, diag = retrieve(page, site, ward)
-                key = f'{site} / {ward}'
-                diagnostics[key] = diag
-                for x in items:
-                    all_items.append(x)
+    diagnostics=[]; raw_items=[]; official_db=build_official_db()
+    with sync_playwright() as pw:
+        browser=pw.chromium.launch(headless=True)
+        context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP")
+        for area,sources in AREAS.items():
+            for source,url in sources.items():
+                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"error":"","body_chars":0,"attempts":0}
+                for attempt in range(2):
+                    page=context.new_page()
+                    try:
+                        rec["attempts"]=attempt+1
+                        if source=="suumo": items,raw=scrape_suumo(page,area,url)
+                        elif source=="homes": items,raw=scrape_homes(page,area,url)
+                        else: items,raw=scrape_athome(page,area,url)
+                        rec["raw"]=raw; rec["parsed"]=len(items); rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000)); rec["status"]="OK" if items else "RETRIEVAL_ZERO"
+                        if items: raw_items.extend(items); break
+                    except PlaywrightTimeoutError as e: rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                    except Exception as e: rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                    finally:
+                        try: page.close()
+                        except Exception: pass
+                rec["seconds"]=round(time.time()-started,1); diagnostics.append(rec)
+        # Enrich only real property links, not navigation. Cap per source/ward to
+        # keep the daily run practical while giving apartment candidates an address.
+        unique_urls=[]; seen_urls=set()
+        for p in raw_items:
+            if p.get("url") and p["url"] not in seen_urls and len(unique_urls)<180:
+                seen_urls.add(p["url"]); unique_urls.append(p["url"])
+        by_url={p["url"]:p for p in raw_items}
+        for u in unique_urls:
+            p=by_url[u]
+            if p.get("rent") is not None and p["rent"]<=MAX_RENT:
+                enrich_from_detail(context,p)
         browser.close()
+    unique=dedupe(raw_items)
+    candidates=filter_candidates(unique,official_db)
+    new_items,price_down=detect_changes(candidates)
+    hist=update_history(candidates)
+    report={"version":"8.5","total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
+    save_json(DIAG_FILE,report); send_report(report)
 
-    all_items = merge_current(all_items)
-
-    # 戸建て系は広く採用。集合住宅は公式DBの住所/建物名一致があるものだけ採用。
-    filtered = []
-    for x in all_items:
-        m = match_candidate(x, official_records)
-        x['official_match'] = m
-        if x.get('kind') == '戸建て系':
-            filtered.append(x)
-        elif x.get('kind') == '集合住宅' and m.get('match_type') != 'none':
-            filtered.append(x)
-    all_items = filtered
-    history, new_items = update_candidate_history(all_items, official_records)
-    save_json(DIAG_PATH, {'updated_at': datetime.now(timezone.utc).isoformat(), 'sites': diagnostics})
-
-    body = make_report(all_items, history, new_items, diagnostics, official_sources)
-    send_email('広島 民泊候補物件 第8.4弾レポート', body)
-
-
-if __name__ == '__main__':
-    main()
+if __name__=="__main__": main()
