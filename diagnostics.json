@@ -1,38 +1,22 @@
 {
   "version": "8.10",
   "stage_summary": {
-    "raw_items": 190,
-    "unique_detail_urls": 190,
-    "detail_page_ok": 190,
-    "detail_validated": 62,
-    "under_rent_cap": 62,
+    "raw_items": 219,
+    "unique_detail_urls": 219,
+    "detail_page_ok": 219,
+    "detail_validated": 61,
+    "under_rent_cap": 61,
     "detached": 0,
-    "apartments": 62,
-    "unknown": 128,
+    "apartments": 61,
+    "unknown": 158,
     "detail_errors": 0
   },
   "official_probe_summary": {
-    "apartment_records_checked": 62,
+    "apartment_records_checked": 61,
     "matched": 0,
-    "unmatched": 62
+    "unmatched": 61
   },
   "official_probe": [
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄江波線 舟入本町駅 9階建 築4年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000110574283/?bc=100532642942",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄本線 小網町駅 13階建 築7年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000110574280/?bc=100532793617",
-      "matches": 0,
-      "levels": []
-    },
     {
       "source": "SUUMO",
       "title": "広島電鉄江波線 舟入町駅 10階建 築1年",
@@ -43,113 +27,129 @@
     },
     {
       "source": "SUUMO",
-      "title": "広島電鉄江波線 江波駅 3階建 築6年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000068440489/?bc=100532751792",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "Residence Iconn KAWARAMACHI",
-      "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000105970669/?bc=100527431527",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄江波線 江波駅 3階建 築5年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000102467356/?bc=100532751798",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄宇品線 鷹野橋駅 10階建 築3年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000094655965/?bc=100532751795",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "Ｍａｒｉｏｎｅｔｔｅ ＸＩＶ 803号室",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000105333981/?bc=100512249987",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "Grand jete Funairi",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000110249030/?bc=100530915551",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
       "title": "広島電鉄宇品線 市役所前駅 11階建 築20年",
       "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000110050706/?bc=100528872612",
+      "url": "https://suumo.jp/chintai/jnc_000110050706/?bc=100528666219",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "フラワーパレスハラダ",
+      "title": "IL CIELO B棟",
       "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000110530416/?bc=100526799007",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ＩＬ ＣＩＥＬＯ Ｂ棟",
-      "address": "広島市中区十日市町1-4-28",
-      "url": "https://suumo.jp/chintai/jnc_000110594308/?bc=100532879220",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄本線 十日市町駅 13階建 築29年",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000110258180/?bc=100531039071",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "パティシェールヨシカワ 302号室",
-      "address": "広島市中区大手町1-1-26",
-      "url": "https://suumo.jp/chintai/jnc_000108669370/?bc=100530640865",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "佐伯ビル",
-      "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000086886378/?bc=100532751790",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "シティーコート上幟町",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000109386514/?bc=100523614616",
+      "url": "https://suumo.jp/chintai/jnc_000110594308/?bc=100532824704",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
       "title": "広島電鉄本線 銀山町駅 7階建 築39年",
-      "address": "広島市中区千田町1-3-1",
+      "address": "広島市中区十日市町1-1-15",
       "url": "https://suumo.jp/chintai/jnc_000109507906/?bc=100524674160",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "フェリーチェ光南",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000107742359/?bc=100530475635",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄江波線 江波駅 3階建 築2年",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000110233965/?bc=100530161576",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "エトワール舟入中町",
+      "address": "広島市中区大手町3-8-3",
+      "url": "https://suumo.jp/chintai/jnc_000092911366/?bc=100532537007",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "アドバンス舟入南",
+      "address": "広島市中区十日市町1-4-28",
+      "url": "https://suumo.jp/chintai/jnc_000097068351/?bc=100532879112",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄江波線 江波駅 3階建 新築",
+      "address": "広島市中区十日市町1-1-15",
+      "url": "https://suumo.jp/chintai/jnc_000109531327/?bc=100525108152",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "REGALEST江波東",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000110189106/?bc=100529829606",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＲＥＳＩＤＥＮＣＥ ＫＯＪＩＭＡ",
+      "address": "広島市中区大手町3-8-3",
+      "url": "https://suumo.jp/chintai/jnc_000107405666/?bc=100505347431",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＬａＳａｎｔｅ舟入本町（旧Ｓ－ＲＥＳＩＤＥＮＣＥ舟入本町）",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000110521844/?bc=100525419984",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "FLAX十日市",
+      "address": "広島市中区大手町3-8-3",
+      "url": "https://suumo.jp/chintai/jnc_000110108424/?bc=100465105432",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄江波線 舟入本町駅 9階建 築4年",
+      "address": "広島市中区十日市町1-1-15",
+      "url": "https://suumo.jp/chintai/jnc_000110574283/?bc=100532642942",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＲＥＬＵＸＩＡ小網町",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000110558852/?bc=100532760315",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "月光江波東参番館",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000110108422/?bc=100529385487",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "グレース十日市",
+      "address": "広島市中区大手町3-8-3",
+      "url": "https://suumo.jp/chintai/jnc_000110521839/?bc=100532355488",
       "matches": 0,
       "levels": []
     },
@@ -163,49 +163,9 @@
     },
     {
       "source": "SUUMO",
-      "title": "Ｇｒａｎｄｔｉｃ Ｂｌａｎｃ",
-      "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000040633385/?bc=100532107787",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "アーバンハイムII",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000110540929/?bc=100532759881",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "第３ヤマモトビル",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000046922139/?bc=100532770105",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
       "title": "ダイアパレス比治山パークサイド",
       "address": "広島市南区宇品神田1-2-3",
-      "url": "https://suumo.jp/chintai/jnc_000022092840/?bc=100510397589",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "グリームマンション",
-      "address": "広島市南区向洋新町3-6-3-103",
-      "url": "https://suumo.jp/chintai/jnc_000110594322/?bc=100523339980",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ダイアパレス皆実町",
-      "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000108426810/?bc=100320892040",
+      "url": "https://suumo.jp/chintai/jnc_000022092840/?bc=100510383260",
       "matches": 0,
       "levels": []
     },
@@ -213,39 +173,23 @@
       "source": "SUUMO",
       "title": "コンフォートＮビル",
       "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000046836238/?bc=100520136755",
+      "url": "https://suumo.jp/chintai/jnc_000046836238/?bc=100520143849",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "Ｒａｄｉａｎｔｅ仁保",
+      "title": "ファンコート堀越壱番館",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000104226759/?bc=100485193388",
+      "url": "https://suumo.jp/chintai/jnc_000110325200/?bc=100531335646",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "Ｂｏｎｈｅｕｒ宇品海岸",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000097476600/?bc=100529683343",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ファンコート堀越 壱番館",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000110325200/?bc=100531528049",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "Ｓ－ＲＥＳＩＤＥＮＣＥ広島駅ｅｎａｂｌｅ",
+      "title": "S-RESIDENCE広島駅enable",
       "address": "広島市南区段原南1-2-15",
-      "url": "https://suumo.jp/chintai/jnc_000109977923/?bc=100528424982",
+      "url": "https://suumo.jp/chintai/jnc_000109977924/?bc=100519437626",
       "matches": 0,
       "levels": []
     },
@@ -253,7 +197,7 @@
       "source": "SUUMO",
       "title": "Ｃａｓａ Ｍａｒｉａ",
       "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000110594321/?bc=100532811063",
+      "url": "https://suumo.jp/chintai/jnc_000110594321/?bc=100532808835",
       "matches": 0,
       "levels": []
     },
@@ -261,7 +205,7 @@
       "source": "SUUMO",
       "title": "ＲＥＧＡＬＥＳＴ ＣＡＲＰ ロード",
       "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000066889240/?bc=100523290662",
+      "url": "https://suumo.jp/chintai/jnc_000066889240/?bc=100523294163",
       "matches": 0,
       "levels": []
     },
@@ -269,7 +213,63 @@
       "source": "SUUMO",
       "title": "ヘーベルメゾン翠",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000093663869/?bc=100532484955",
+      "url": "https://suumo.jp/chintai/jnc_000093663869/?bc=100532483563",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ゼピュロス Ａ棟",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000110585824/?bc=100532800628",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＪＲ山陽本線 天神川駅 2階建 築12年",
+      "address": "広島市南区宇品神田1-2-3",
+      "url": "https://suumo.jp/chintai/jnc_000040633386/?bc=100532055093",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＪＲ山陽本線 広島駅 3階建 築8年",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000066898481/?bc=100523875337",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "松川ビル",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000040278866/?bc=100530492215",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ヴィラフェリーク",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000110594320/?bc=100532822722",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ウイング金屋町ステーションサイド",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000108501893/?bc=100514308699",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Ｇｒａｎｄｔｉｃ Ｂｌａｎｃ",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000040633385/?bc=100532111034",
       "matches": 0,
       "levels": []
     },
@@ -277,63 +277,7 @@
       "source": "SUUMO",
       "title": "カミーリア Ｂ棟",
       "address": "広島市西区横川町3-12-1",
-      "url": "https://suumo.jp/chintai/jnc_000079090727/?bc=100425358863",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ディアコート草津",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000109698625/?bc=100530437060",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ＰＬＥＩＮ ＳＯＬＥＩＬ 庚午北",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000100179751/?bc=100449416180",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄本線 天満町駅 6階建 築42年",
-      "address": "広島市西区己斐本町1-17-2井崎ビル1F",
-      "url": "https://suumo.jp/chintai/jnc_000110554596/?bc=100532751796",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "カーサ大成",
-      "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000098328872/?bc=100436032275",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "サムソン都町",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000108308114/?bc=100515319466",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "小山ビル",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000016603013/?bc=100431397185",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "コーポ石崎",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000081077373/?bc=100326390680",
+      "url": "https://suumo.jp/chintai/jnc_000079090727/?bc=100425364052",
       "matches": 0,
       "levels": []
     },
@@ -347,14 +291,6 @@
     },
     {
       "source": "SUUMO",
-      "title": "ハイネ大宮",
-      "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000099802509/?bc=100526534107",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
       "title": "パークヒル井口Ｄ棟",
       "address": "広島市西区井口5-1-6",
       "url": "https://suumo.jp/chintai/jnc_000082348300/?bc=100510773121",
@@ -363,9 +299,17 @@
     },
     {
       "source": "SUUMO",
+      "title": "セブンプロート庚午南",
+      "address": "広島市西区横川町3-12-1",
+      "url": "https://suumo.jp/chintai/jnc_000089013333/?bc=100523205451",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
       "title": "ブルーグランド竜王",
       "address": "広島市西区横川町3-3-7",
-      "url": "https://suumo.jp/chintai/jnc_000110574286/?bc=100532730910",
+      "url": "https://suumo.jp/chintai/jnc_000110574286/?bc=100532720808",
       "matches": 0,
       "levels": []
     },
@@ -381,7 +325,7 @@
       "source": "SUUMO",
       "title": "グリーンコート井口",
       "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000107282333/?bc=100507471226",
+      "url": "https://suumo.jp/chintai/jnc_000107282333/?bc=100512234468",
       "matches": 0,
       "levels": []
     },
@@ -389,7 +333,39 @@
       "source": "SUUMO",
       "title": "ドミール庚午北",
       "address": "広島市西区横川町3-12-1",
-      "url": "https://suumo.jp/chintai/jnc_000110590680/?bc=100532791287",
+      "url": "https://suumo.jp/chintai/jnc_000110590680/?bc=100532770345",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Ｓ－ＲＥＳＩＤＥＮＣＥ東観音町ａｃｈｉｅｖｅ",
+      "address": "広島市西区横川町3-12-1",
+      "url": "https://suumo.jp/chintai/jnc_000109486996/?bc=100522489846",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＢＯＮＤＢＬＤ．II",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000031221772/?bc=100529676445",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＪＲ可部線 三滝駅 3階建 築13年",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000110579627/?bc=100532661343",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "セポ草津南",
+      "address": "広島市西区横川町3-12-1",
+      "url": "https://suumo.jp/chintai/jnc_000110530429/?bc=100532261918",
       "matches": 0,
       "levels": []
     },
@@ -397,55 +373,47 @@
       "source": "SUUMO",
       "title": "セブンプロート己斐西",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000051100344/?bc=100531683877",
+      "url": "https://suumo.jp/chintai/jnc_000051100344/?bc=100531685281",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "フォレストハイム矢賀",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110536104/?bc=100532324662",
+      "title": "シンビ高須駅前III",
+      "address": "広島市西区横川町3-12-1",
+      "url": "https://suumo.jp/chintai/jnc_000050904589/?bc=100416042631",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ゆうとぴあ B棟",
-      "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110536105/?bc=100532448183",
+      "title": "ＭＯＶＥ高須駅前",
+      "address": "広島市西区横川町2-9-3",
+      "url": "https://suumo.jp/chintai/jnc_000108919747/?bc=100520046690",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "グランメール ２3",
-      "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110227856/?bc=100529279348",
+      "title": "シンビ高須駅前II",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000106431534/?bc=100501472426",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "アイステージ牛田南",
-      "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000109445901/?bc=100524017372",
+      "title": "Ｌｉｅｎ草津南",
+      "address": "広島市西区横川町2-9-3",
+      "url": "https://suumo.jp/chintai/jnc_000110481824/?bc=100376221121",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ルクプル Ｂ棟",
-      "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110536106/?bc=100532324684",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ヒューゲルハイムI",
-      "address": "広島市東区矢賀新町3-2-3",
-      "url": "https://suumo.jp/chintai/jnc_000110590672/?bc=100532788967",
+      "title": "サンパティオ高須",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000108787998/?bc=100494747338",
       "matches": 0,
       "levels": []
     },
@@ -453,15 +421,15 @@
       "source": "SUUMO",
       "title": "Ｆ・Ｒ II",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110508131/?bc=100532152162",
+      "url": "https://suumo.jp/chintai/jnc_000110508131/?bc=100532150476",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "S-RESIDENCE広島駅clarity",
+      "title": "Ｓ－ＲＥＳＩＤＥＮＣＥ広島駅ｃｌａｒｉｔｙ",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000108886830/?bc=100520171818",
+      "url": "https://suumo.jp/chintai/jnc_000108886830/?bc=100519902078",
       "matches": 0,
       "levels": []
     },
@@ -469,7 +437,7 @@
       "source": "SUUMO",
       "title": "メゾン・ド・ボヌール",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110521859/?bc=100532200689",
+      "url": "https://suumo.jp/chintai/jnc_000110521859/?bc=100532260082",
       "matches": 0,
       "levels": []
     },
@@ -477,23 +445,15 @@
       "source": "SUUMO",
       "title": "エクラージュ牛田旭",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000101615989/?bc=100532798633",
+      "url": "https://suumo.jp/chintai/jnc_000101760957/?bc=100532265500",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "クレール矢賀駅前",
+      "title": "フォレストハイム矢賀",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110274726/?bc=100530635103",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ＵＮＩＳＯＮ ＮＥＸＴ",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110446346/?bc=100532311431",
+      "url": "https://suumo.jp/chintai/jnc_000110536104/?bc=100532448105",
       "matches": 0,
       "levels": []
     },
@@ -507,15 +467,47 @@
     },
     {
       "source": "SUUMO",
-      "title": "プレミア尾長西 Ｂ棟",
+      "title": "ゆうとぴあ B棟",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110536107/?bc=100532345804",
+      "url": "https://suumo.jp/chintai/jnc_000110536105/?bc=100532547818",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "グランメール ２１",
+      "address": "広島市東区光町1-11-9",
+      "url": "https://suumo.jp/chintai/jnc_000110166046/?bc=100531750747",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "コーポ木谷",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000109543731/?bc=100469331489",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ローゼンハイム",
+      "address": "広島市東区光町1-11-9",
+      "url": "https://suumo.jp/chintai/jnc_000044148562/?bc=100532859162",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ロイヤル21",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000095846681/?bc=100532258257",
       "matches": 0,
       "levels": []
     }
   ],
-  "total_raw": 190,
-  "total_retrieved": 190,
+  "total_raw": 219,
+  "total_retrieved": 219,
   "candidates": 0,
   "current": 0,
   "new": [],
@@ -539,49 +531,49 @@
       "unknown": 3,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 12625,
+      "body_chars": 14742,
       "attempts": 1,
-      "seconds": 164.0
+      "seconds": 135.0
     },
     {
       "area": "中区",
       "source": "homes",
       "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
       "status": "OK",
-      "raw": 134,
-      "parsed": 52,
-      "detail_attempted": 52,
-      "detail_page_ok": 52,
+      "raw": 188,
+      "parsed": 79,
+      "detail_attempted": 79,
+      "detail_page_ok": 79,
       "detail_validated": 0,
       "under_rent_cap": 0,
       "detached": 0,
       "apartment": 0,
-      "unknown": 52,
+      "unknown": 79,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 21048,
+      "body_chars": 21587,
       "attempts": 1,
-      "seconds": 448.3
+      "seconds": 671.1
     },
     {
       "area": "中区",
       "source": "athome",
       "url": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_naka-city/",
       "status": "OK",
-      "raw": 206,
-      "parsed": 58,
-      "detail_attempted": 58,
-      "detail_page_ok": 58,
+      "raw": 246,
+      "parsed": 60,
+      "detail_attempted": 60,
+      "detail_page_ok": 60,
       "detail_validated": 0,
       "under_rent_cap": 0,
       "detached": 0,
       "apartment": 0,
-      "unknown": 58,
+      "unknown": 60,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 11861,
+      "body_chars": 12030,
       "attempts": 1,
-      "seconds": 606.6
+      "seconds": 590.9
     },
     {
       "area": "南区",
@@ -599,9 +591,9 @@
       "unknown": 5,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 16568,
+      "body_chars": 15876,
       "attempts": 1,
-      "seconds": 193.1
+      "seconds": 177.3
     },
     {
       "area": "南区",
@@ -639,9 +631,9 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 535,
+      "body_chars": 534,
       "attempts": 2,
-      "seconds": 5.2
+      "seconds": 4.9
     },
     {
       "area": "西区",
@@ -652,16 +644,16 @@
       "parsed": 20,
       "detail_attempted": 20,
       "detail_page_ok": 20,
-      "detail_validated": 16,
-      "under_rent_cap": 16,
+      "detail_validated": 18,
+      "under_rent_cap": 18,
       "detached": 0,
-      "apartment": 16,
-      "unknown": 4,
+      "apartment": 18,
+      "unknown": 2,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 12267,
+      "body_chars": 14021,
       "attempts": 1,
-      "seconds": 167.2
+      "seconds": 128.6
     },
     {
       "area": "西区",
@@ -699,9 +691,9 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 534,
+      "body_chars": 533,
       "attempts": 2,
-      "seconds": 5.0
+      "seconds": 4.8
     },
     {
       "area": "東区",
@@ -712,16 +704,16 @@
       "parsed": 20,
       "detail_attempted": 20,
       "detail_page_ok": 20,
-      "detail_validated": 14,
-      "under_rent_cap": 14,
+      "detail_validated": 11,
+      "under_rent_cap": 11,
       "detached": 0,
-      "apartment": 14,
-      "unknown": 6,
+      "apartment": 11,
+      "unknown": 9,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 12262,
+      "body_chars": 12003,
       "attempts": 1,
-      "seconds": 223.7
+      "seconds": 191.9
     },
     {
       "area": "東区",
@@ -741,7 +733,7 @@
       "error": "",
       "body_chars": 318,
       "attempts": 2,
-      "seconds": 4.0
+      "seconds": 4.1
     },
     {
       "area": "東区",
@@ -759,13 +751,13 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 536,
+      "body_chars": 535,
       "attempts": 2,
-      "seconds": 5.0
+      "seconds": 4.8
     }
   ],
   "official_db": {
-    "updated_at": "2026-10-20T13:25:20+09:00",
+    "updated_at": "2026-10-20T23:21:55+09:00",
     "records": [
       {
         "type": "住宅宿泊事業",
@@ -12184,20 +12176,20 @@
         "status": "OK",
         "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/508/080893.pdf",
         "records": 275,
-        "seconds": 1.9
+        "seconds": 1.6
       },
       {
         "kind": "ryokan",
         "status": "OK",
         "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/507/r809.pdf",
         "records": 456,
-        "seconds": 2.3
+        "seconds": 2.0
       }
     ]
   },
   "history": {
     "version": "8.10",
-    "updated_at": "2026-10-20T13:55:51+09:00",
+    "updated_at": "2026-10-20T23:53:57+09:00",
     "records": {
       "addr|広島県広島市中区大手町383|24000|ワンルーム|14.4|中区": {
         "source": "SUUMO",
