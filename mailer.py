@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.7"
+VERSION = "8.8"
 
 
 def yen(v):
@@ -38,6 +38,7 @@ def send_report(data):
     hist=data.get('history',{}).get('records',{}) if isinstance(data.get('history',{}),dict) else {}
     match_levels=data.get('official_match_levels',{})
     legacy=data.get('legacy_unvalidated_count',0)
+    stage=data.get("stage_summary",{})
     lines=[
         f"広島 民泊候補物件 第{VERSION}弾レポート",
         "="*56,
@@ -51,7 +52,17 @@ def send_report(data):
         f"公式照合：部屋一致{match_levels.get('部屋番号一致',0)} / 住所一致{match_levels.get('住所一致',0)} / 建物名一致{match_levels.get('建物名一致',0)}",
         f"旧版履歴の未再検証：{legacy}件（履歴は削除していません）",
         "",
-        "【第8.7弾の検索ルール】",
+        "【検索・除外の段階別件数】",
+        f"・検索サイトから取得した物件URL：{stage.get('raw_items',0)}件",
+        f"・重複除去後の詳細URL：{stage.get('unique_detail_urls',0)}件",
+        f"・詳細ページ検証成功：{stage.get('detail_validated',0)}件",
+        f"・家賃10万円以下：{stage.get('under_rent_cap',0)}件",
+        f"・戸建て系：{stage.get('detached',0)}件",
+        f"・集合住宅：{stage.get('apartments',0)}件",
+        f"・種別不明：{stage.get('unknown',0)}件",
+        f"・詳細ページ取得エラー：{stage.get('detail_errors',0)}件",
+        "",
+        "【サイト別取得・判定状況】",
         "・戸建て系：SUUMO / HOME'S / at home を広く検索",
         "・集合住宅：広島市公式の「民泊届出」または「旅館業許可」一覧と、住所または建物名が明確に一致するものだけ採用",
         "・集合住宅は公式照合できなければ候補から除外",
@@ -61,6 +72,11 @@ def send_report(data):
         "・建物名の部分一致は不採用",
         "・部屋番号一致だけでは不採用。建物/住所の整合を確認",
         "・家賃上限：10万円以下",
+        "",
+    ]
+    for d in data.get("diagnostics",[]):
+        lines.append(f"・{d.get('area','')} / {d.get('source','')}：URL候補{d.get('raw',0)} / 取得{d.get('parsed',0)} / 詳細検証{d.get('detail_validated',0)} / 戸建{d.get('detached',0)} / 集合{d.get('apartment',0)} / 不明{d.get('unknown',0)} / エラー{d.get('detail_errors',0)} / 状態{d.get('status','')}")
+    lines += [
         "",
         "【今回の候補】",
         "-"*56,
@@ -78,7 +94,7 @@ def send_report(data):
     lines += [
         "",
         "="*56,
-        "※第8.7弾では、物件詳細ページで種別を再確認できない物件は候補に採用しません。",
+        "※第8.8弾では、検索結果の取得件数と詳細ページ検証件数を分けて記録し、取得→検証→採用のどこで候補が減ったかを確認できるようにしています。",
         "※集合住宅は、現在取得した広島市公式一覧との明確な一致が必要です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
