@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.8"
+VERSION = "8.9"
 
 
 def yen(v):
@@ -55,7 +55,8 @@ def send_report(data):
         "【検索・除外の段階別件数】",
         f"・検索サイトから取得した物件URL：{stage.get('raw_items',0)}件",
         f"・重複除去後の詳細URL：{stage.get('unique_detail_urls',0)}件",
-        f"・詳細ページ検証成功：{stage.get('detail_validated',0)}件",
+        f"・詳細ページ読み込み成功：{stage.get('detail_page_ok',0)}件",
+        f"・物件情報（種別・住所）検証成功：{stage.get('detail_validated',0)}件",
         f"・家賃10万円以下：{stage.get('under_rent_cap',0)}件",
         f"・戸建て系：{stage.get('detached',0)}件",
         f"・集合住宅：{stage.get('apartments',0)}件",
@@ -94,7 +95,7 @@ def send_report(data):
     lines += [
         "",
         "="*56,
-        "※第8.8弾では、検索結果の取得件数と詳細ページ検証件数を分けて記録し、取得→検証→採用のどこで候補が減ったかを確認できるようにしています。",
+        "※第8.9弾では、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・採用を分離して記録し、どこで候補が減ったかを確認できるようにしています。",
         "※集合住宅は、現在取得した広島市公式一覧との明確な一致が必要です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
