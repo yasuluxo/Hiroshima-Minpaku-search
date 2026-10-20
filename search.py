@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.9"
+VERSION = "8.10"
 
 
 def load_json(path, default):
@@ -437,9 +437,34 @@ def jsonld_value(obj, key):
     return v or ""
 
 
-def extract_detail_structured(page, area):
+def extract_detail_structured(page, area, source=""):
+    """Source-specific detail extraction with safe body fallbacks."""
     """Extract only property-detail signals; generic search-page UI is ignored."""
     result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":""}
+
+    # First inspect source-specific detail containers. These are only hints;
+    # the rendered detail body remains the fallback. We never use a search-card
+    # ancestor as the authoritative property type.
+    source_selectors = {
+        "SUUMO": [".property_data", ".data_table", ".detail_info", "dl"],
+        "HOME'S": ["dl", "table", "[class*=detail]", "[class*=property]"],
+        "at home": ["dl", "table", "[class*=detail]", "[class*=property]"],
+    }
+    chunks=[]
+    for sel in source_selectors.get(source, []):
+        try:
+            loc=page.locator(sel)
+            for i in range(min(loc.count(), 10)):
+                t=clean_text(loc.nth(i).inner_text(timeout=1200))
+                if t and len(t)<=6000: chunks.append(t)
+        except Exception:
+            pass
+    if chunks:
+        joined=" ".join(chunks)
+        m=re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|賃貸アパート|アパート|賃貸マンション|マンション|テラスハウス|タウンハウス|長屋)", joined)
+        if m: result["property_label"]=m.group(1)
+        a=extract_address(joined,area)
+        if a: result["address"]=a
     objs=jsonld_objects(page)
     for obj in objs:
         typ=obj.get("@type") if isinstance(obj,dict) else ""
@@ -489,8 +514,8 @@ def extract_detail_structured(page, area):
 
     # Prefer labels close to the property-type field. Avoid generic navigation phrases.
     label_patterns=[
-        r"(?:物件種別|建物種別|種別)\s*[:：]?\s*(賃貸一戸建て|一戸建て|一戸建|貸家|賃貸アパート|アパート|賃貸マンション|マンション|テラスハウス|タウンハウス|長屋)",
-        r"(賃貸一戸建て|賃貸アパート|賃貸マンション|賃貸テラスハウス|賃貸タウンハウス)\s+(?:[\d,]+円|\d+(?:\.\d+)?万円)",
+        r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|賃貸アパート|アパート|賃貸マンション|マンション|テラスハウス|タウンハウス|長屋)",
+        r"(?:賃貸|貸し)\s*(一戸建て|一戸建|貸家|アパート|マンション|テラスハウス|タウンハウス|長屋)",
     ]
     for pat in label_patterns:
         m=re.search(pat,body)
@@ -535,13 +560,22 @@ def enrich_from_detail(page, p):
     p["detail_error"] = ""
     for attempt in range(1,4):
         try:
-            page.goto(p["url"], wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
-            page.wait_for_timeout(1200 if attempt == 1 else 1800)
-            body=clean_text(page.locator("body").inner_text(timeout=8000))
+            response = page.goto(p["url"], wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
+            page.wait_for_timeout(1600 if attempt == 1 else 2200)
+            try:
+                page.wait_for_load_state("networkidle", timeout=7000)
+            except Exception:
+                pass
+            body=clean_text(page.locator("body").inner_text(timeout=10000))
             if len(body) < 200:
                 raise RuntimeError(f"detail_body_too_short:{len(body)}")
+            low_body=body.lower()
+            if any(x in low_body for x in ["access denied","captcha","robot check","too many requests","ページが見つかりません"]):
+                raise RuntimeError("detail_blocked_or_error_page")
             p["detail_page_ok"] = True
-            d=extract_detail_structured(page,p.get("area",""))
+            p["detail_error"] = ""
+            p["detail_http_status"] = response.status if response else None
+            d=extract_detail_structured(page,p.get("area",""),p.get("source",""))
             title=extract_detail_title(page) or d.get("title","")
             if title and len(title)<120: p["title"]=title
             if d.get("address") and has_full_address(d["address"]): p["address"]=d["address"]
@@ -708,11 +742,11 @@ def main():
                     enrich_from_detail(detail_page,p)
                 rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
                 rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
-                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("rent") is not None and p.get("rent")<=MAX_RENT)
-                rec["detached"]=sum(1 for p in local.values() if p.get("property_kind")=="戸建て系")
-                rec["apartment"]=sum(1 for p in local.values() if p.get("property_kind")=="集合住宅")
-                rec["unknown"]=sum(1 for p in local.values() if p.get("property_kind")=="不明")
-                rec["detail_errors"]=sum(1 for p in local.values() if p.get("detail_error"))
+                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+                rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
+                rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
+                rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
+                rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
                 rec["seconds"]=round(time.time()-started,1)
                 diagnostics.append(rec)
         try: detail_page.close()
@@ -724,18 +758,29 @@ def main():
     new_items,price_down=detect_changes(candidates)
     hist=update_history(candidates)
     valid_hist=valid_history_records(hist)
+    by_url={}
+    for p in raw_items:
+        u=p.get("url")
+        if u and u not in by_url: by_url[u]=p
+    stage_items=list(by_url.values())
     stage_summary={
         "raw_items": len(raw_items),
-        "unique_detail_urls": len({p.get("url") for p in raw_items if p.get("url")}),
-        "detail_page_ok": sum(1 for p in raw_items if p.get("detail_page_ok")),
-        "detail_validated": sum(1 for p in raw_items if p.get("detail_validated")),
-        "under_rent_cap": sum(1 for p in raw_items if p.get("rent") is not None and p.get("rent")<=MAX_RENT),
-        "detached": sum(1 for p in raw_items if p.get("property_kind")=="戸建て系"),
-        "apartments": sum(1 for p in raw_items if p.get("property_kind")=="集合住宅"),
-        "unknown": sum(1 for p in raw_items if p.get("property_kind")=="不明"),
-        "detail_errors": sum(1 for p in raw_items if p.get("detail_error")),
+        "unique_detail_urls": len(stage_items),
+        "detail_page_ok": sum(1 for p in stage_items if p.get("detail_page_ok")),
+        "detail_validated": sum(1 for p in stage_items if p.get("detail_validated")),
+        "under_rent_cap": sum(1 for p in stage_items if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT),
+        "detached": sum(1 for p in stage_items if p.get("detail_validated") and p.get("property_kind")=="戸建て系"),
+        "apartments": sum(1 for p in stage_items if p.get("detail_validated") and p.get("property_kind")=="集合住宅"),
+        "unknown": sum(1 for p in stage_items if p.get("detail_page_ok") and not p.get("detail_validated")),
+        "detail_errors": sum(1 for p in stage_items if not p.get("detail_page_ok")),
     }
-    report={"version":VERSION,"stage_summary":stage_summary,"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
+    official_candidates=[p for p in stage_items if p.get("detail_validated") and p.get("property_kind")=="集合住宅"]
+    official_probe=[]
+    for p in official_candidates:
+        ms=match_official(p,official_db)
+        official_probe.append({"source":p.get("source"),"title":p.get("title"),"address":p.get("address"),"url":p.get("url"),"matches":len(ms),"levels":sorted(set(x.get("match_level") for x in ms if x.get("match_level")))})
+    official_probe_summary={"apartment_records_checked":len(official_probe),"matched":sum(1 for x in official_probe if x.get("matches")),"unmatched":sum(1 for x in official_probe if not x.get("matches"))}
+    report={"version":VERSION,"stage_summary":stage_summary,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
