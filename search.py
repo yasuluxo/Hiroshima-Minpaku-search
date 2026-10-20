@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.6"
+VERSION = "8.7"
 
 
 def load_json(path, default):
@@ -158,7 +158,7 @@ def score_property(p):
 
 def looks_like_property(text):
     t = clean_text(text)
-    return len(t) >= 20 and bool(parse_rent(t)) and bool(parse_area(t)) and bool(parse_layout(t) or re.search(r"賃貸(?:一戸建て|アパート|マンション|テラスハウス|タウンハウス)", t))
+    return len(t) >= 20 and bool(parse_rent(t)) and bool(parse_area(t)) and bool(parse_layout(t) or re.search(r"(?:一戸建て|一戸建|貸家|アパート|マンション|テラスハウス|タウンハウス|長屋|メゾネット)", t))
 
 
 def valid_property_url(source, full):
@@ -250,54 +250,136 @@ def scrape_suumo(page, area, url):
     return items, raw
 
 
-def bounded_card(a, max_levels=4, max_chars=3500):
+def bounded_card(a, max_levels=7, max_chars=5000):
+    """Return the smallest useful property-card ancestor.
+    More levels than 8.6 are allowed, but we stop once a self-contained card
+    contains rent + area + layout. This avoids borrowing data from sibling cards.
+    """
     cur=a
     best=""
     for _ in range(max_levels):
         cur=cur.locator("xpath=..")
-        try: t=clean_text(cur.inner_text(timeout=1500))
-        except Exception: t=""
-        if t and len(t) <= max_chars and len(t) > len(best): best=t
-        if t and looks_like_property(t) and len(t) <= max_chars: return t
+        try:
+            t=clean_text(cur.inner_text(timeout=1500))
+        except Exception:
+            t=""
+        if not t or len(t)>max_chars:
+            continue
+        if len(t)>len(best): best=t
+        if looks_like_property(t):
+            return t
     return best
 
 
-def scrape_homes(page, area, url):
-    page.goto(url, wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
-    page.wait_for_timeout(2200)
-    links=page.locator('a[href*="/chintai/room/"]')
-    raw=links.count(); items=[]; seen=set()
-    for i in range(raw):
+def page_variants(page, base_url, max_pages=5):
+    """Discover pagination URLs without inventing site-specific URL formats."""
+    urls=[]; seen=set()
+    def add(u):
+        u=urljoin(base_url,u).split('#')[0]
+        if not u or u in seen: return
+        low=u.lower()
+        if any(x in low for x in ['/login','/mypage','/search/','/ranking','/souba','/app/']): return
+        seen.add(u); urls.append(u)
+    add(base_url)
+    for _ in range(max_pages-1):
+        found=[]
         try:
-            a=links.nth(i); h=a.get_attribute("href") or ""; full=urljoin(page.url,h).split("#")[0]
-            if not valid_property_url("homes",full) or full in seen: continue
-            txt=bounded_card(a)
-            if not looks_like_property(txt): continue
-            title=title_from_card(txt,a.inner_text())
-            item=make_item("HOME'S",area,title,txt,full)
-            if item["rent"] is None or item["size"] is None: continue
-            seen.add(full); items.append(item)
-        except Exception: pass
-    return items, raw
+            links=page.locator('a')
+            for i in range(links.count()):
+                a=links.nth(i)
+                txt=clean_text(a.inner_text())
+                href=a.get_attribute('href') or ''
+                if not href: continue
+                if re.search(r'(次へ|次のページ|次ページ|›|»)',txt): found.append(urljoin(page.url,href))
+        except Exception:
+            pass
+        nxt=None
+        for u in found:
+            if u not in seen: nxt=u; break
+        if not nxt: break
+        add(nxt)
+        try:
+            page.goto(nxt,wait_until='domcontentloaded',timeout=REQUEST_TIMEOUT_MS)
+            page.wait_for_timeout(1200)
+        except Exception:
+            break
+    return urls
+
+
+def collect_hrefs_from_listing(page, source):
+    selector = {
+        'homes':'a[href*="/chintai/room/"]',
+        'athome':'a[href*="/chintai/"]',
+    }[source]
+    try: return page.locator(selector).count()
+    except Exception: return 0
+
+
+def scrape_homes(page, area, url):
+    items=[]; seen=set(); raw_total=0
+    current=url
+    for page_no in range(1,6):
+        try:
+            page.goto(current,wait_until='domcontentloaded',timeout=REQUEST_TIMEOUT_MS)
+            page.wait_for_timeout(1800)
+            links=page.locator('a[href*="/chintai/room/"]')
+            raw=links.count(); raw_total+=raw
+            for i in range(raw):
+                try:
+                    a=links.nth(i); h=a.get_attribute('href') or ''; full=urljoin(page.url,h).split('#')[0]
+                    if not valid_property_url('homes',full) or full in seen: continue
+                    txt=bounded_card(a)
+                    if not looks_like_property(txt): continue
+                    title=title_from_card(txt,a.inner_text())
+                    item=make_item("HOME'S",area,title,txt,full)
+                    if item['rent'] is None or item['size'] is None: continue
+                    seen.add(full); items.append(item)
+                except Exception: pass
+            nxt=None
+            for j in range(page.locator('a').count()):
+                try:
+                    a=page.locator('a').nth(j); txt=clean_text(a.inner_text()); href=a.get_attribute('href') or ''
+                    if re.search(r'(次へ|次のページ|次ページ|›|»)',txt) and href:
+                        u=urljoin(page.url,href).split('#')[0]
+                        if u not in {x.get('url') for x in items}: nxt=u; break
+                except Exception: pass
+            if not nxt or nxt==current: break
+            current=nxt
+        except Exception: break
+    return items, raw_total
 
 
 def scrape_athome(page, area, url):
-    page.goto(url, wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
-    page.wait_for_timeout(2200)
-    links=page.locator('a[href*="/chintai/"]')
-    raw=links.count(); items=[]; seen=set()
-    for i in range(raw):
+    items=[]; seen=set(); raw_total=0; current=url
+    for page_no in range(1,6):
         try:
-            a=links.nth(i); h=a.get_attribute("href") or ""; full=urljoin(page.url,h).split("#")[0]
-            if not valid_property_url("athome",full) or full in seen: continue
-            txt=bounded_card(a)
-            if not looks_like_property(txt): continue
-            title=title_from_card(txt,a.inner_text())
-            item=make_item("at home",area,title,txt,full)
-            if item["rent"] is None or item["size"] is None: continue
-            seen.add(full); items.append(item)
-        except Exception: pass
-    return items, raw
+            page.goto(current,wait_until='domcontentloaded',timeout=REQUEST_TIMEOUT_MS)
+            page.wait_for_timeout(1800)
+            links=page.locator('a[href*="/chintai/"]')
+            raw=links.count(); raw_total+=raw
+            for i in range(raw):
+                try:
+                    a=links.nth(i); h=a.get_attribute('href') or ''; full=urljoin(page.url,h).split('#')[0]
+                    if not valid_property_url('athome',full) or full in seen: continue
+                    txt=bounded_card(a)
+                    if not looks_like_property(txt): continue
+                    title=title_from_card(txt,a.inner_text())
+                    item=make_item('at home',area,title,txt,full)
+                    if item['rent'] is None or item['size'] is None: continue
+                    seen.add(full); items.append(item)
+                except Exception: pass
+            nxt=None
+            for j in range(page.locator('a').count()):
+                try:
+                    a=page.locator('a').nth(j); txt=clean_text(a.inner_text()); href=a.get_attribute('href') or ''
+                    if re.search(r'(次へ|次のページ|次ページ|›|»)',txt) and href:
+                        u=urljoin(page.url,href).split('#')[0]
+                        if u!=current: nxt=u; break
+                except Exception: pass
+            if not nxt: break
+            current=nxt
+        except Exception: break
+    return items, raw_total
 
 
 def jsonld_objects(page):
@@ -383,6 +465,13 @@ def extract_detail_structured(page, area):
         if m:
             result["property_label"]=m.group(1); break
     if not result["property_label"]:
+        # Common site-specific phrases that identify the actual listing type.
+        m=re.search(r"(?:賃貸|建物)\s*(一戸建て|一戸建|貸家|テラスハウス|タウンハウス|長屋|マンション|アパート)",body)
+        if m: result["property_label"]=m.group(1)
+    if not result["property_label"]:
+        m=re.search(r"(一戸建て|一戸建|貸家|テラスハウス|タウンハウス|長屋|マンション|アパート)\s*(?:の)?\s*賃貸",body)
+        if m: result["property_label"]=m.group(1)
+    if not result["property_label"]:
         # Search a compact window around floor-count / structure terms.
         m=re.search(r"([^。\n]{0,80}(?:\d+階建|一戸建て|一戸建|貸家|マンション|アパート)[^。\n]{0,80})",body)
         if m: result["structure"]=m.group(1)
@@ -401,10 +490,10 @@ def enrich_from_detail(context, p):
         if d.get("rent") is not None: p["rent"]=d["rent"]
         if d.get("title") and len(d["title"])<100: p["title"]=d["title"]
         p["detail_text"]=d.get("detail_text","")[:12000]
-        p["property_label"]=d.get("property_label","")
+        p["property_label"]=d.get("property_label") or p.get("property_label","")
         # Structure comes from the detail page only. This is intentionally strict.
         kind, reason=classify_kind_from_signals(
-            d.get("property_label",""), d.get("detail_text",""), d.get("structure",""), p.get("title","")
+            p.get("property_label","") or d.get("property_label",""), d.get("detail_text",""), d.get("structure",""), p.get("title","")
         )
         p["property_kind"]=kind
         p["classification_reason"]=reason
