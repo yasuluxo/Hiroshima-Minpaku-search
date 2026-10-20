@@ -101,11 +101,15 @@ def find_pdf_url(html, base_url, kind):
         href,text=item; t=(text+' '+href).lower(); sc=0
         if '一覧' in text: sc+=100
         if '現在' in text: sc+=80
+        if re.search(r'20\d{2}年\d{1,2}月\d{1,2}日', text): sc+=50
         if kind=='minpaku' and ('住宅宿泊' in text or '民泊' in text): sc+=60
         if kind=='ryokan' and '旅館業' in text: sc+=60
         # Prefer dates/year/revision tokens that indicate a newer publication.
-        nums=[int(x) for x in re.findall(r'20(2[4-9])\D?(\d{2})\D?(\d{2})',t)]
-        if nums: sc+=max((a*10000+b*100+c for a,b,c in nums),default=0)/100000
+        nums=[]
+        for yy,mm,dd in re.findall(r'(20(?:2[4-9]))\D?(\d{1,2})\D?(\d{1,2})',t):
+            try: nums.append(int(yy)*10000+int(mm)*100+int(dd))
+            except Exception: pass
+        if nums: sc += max(nums,default=0)/100000
         return sc
     matches.sort(key=score,reverse=True)
     return matches[0][0]
