@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.7"
+VERSION = "8.8"
 
 
 def load_json(path, default):
@@ -157,8 +157,19 @@ def score_property(p):
 
 
 def looks_like_property(text):
+    """Loose listing-card gate. A valid property detail URL is more important
+    than having every field in the search-card text. Detail validation is the
+    authoritative gate later. This prevents 8.6/8.7 from dropping most homes
+    before we ever visit their detail pages."""
     t = clean_text(text)
-    return len(t) >= 20 and bool(parse_rent(t)) and bool(parse_area(t)) and bool(parse_layout(t) or re.search(r"(?:一戸建て|一戸建|貸家|アパート|マンション|テラスハウス|タウンハウス|長屋|メゾネット)", t))
+    if len(t) < 8:
+        return False
+    # Keep only cards that contain at least one property-specific signal.
+    return bool(
+        re.search(r"\d+(?:\.\d+)?\s*(?:万円|円)", t)
+        or re.search(r"\d+(?:\.\d+)?\s*(?:m²|m2|㎡)", t)
+        or re.search(r"(?:ワンルーム|[1-5](?:LDK|DK|K|LK)|一戸建て|一戸建|貸家|アパート|マンション|テラスハウス|タウンハウス|長屋|メゾネット)", t)
+    )
 
 
 def valid_property_url(source, full):
@@ -228,7 +239,9 @@ def scrape_suumo(page, area, url):
     for i in range(raw):
         try:
             c=cards.nth(i); txt=clean_text(c.inner_text())
-            if not looks_like_property(txt): continue
+            if not looks_like_property(txt):
+                # Keep the card if it contains a real SUUMO detail URL; field extraction is deferred.
+                pass
             links=c.locator("a"); href=""
             for j in range(min(links.count(),15)):
                 h=links.nth(j).get_attribute("href") or ""
@@ -243,7 +256,6 @@ def scrape_suumo(page, area, url):
             label = title_from_card(txt)
             kind, reason = classify_kind_from_signals(label, txt, "", title)
             item={"source":"SUUMO","area":area,"title":title,"rent":parse_rent(renttxt),"layout":clean_text(layout),"size":parse_area(sizetxt),"address":addr,"url":href,"description":txt,"property_label":label,"property_kind":kind,"classification_reason":reason}
-            if item["rent"] is None or item["size"] is None: continue
             seen.add(href); items.append(item)
         except Exception:
             pass
@@ -329,10 +341,11 @@ def scrape_homes(page, area, url):
                     a=links.nth(i); h=a.get_attribute('href') or ''; full=urljoin(page.url,h).split('#')[0]
                     if not valid_property_url('homes',full) or full in seen: continue
                     txt=bounded_card(a)
-                    if not looks_like_property(txt): continue
+                    if not looks_like_property(txt):
+                        # A detail URL itself is enough to defer validation to the detail page.
+                        txt = clean_text(txt or a.inner_text())
                     title=title_from_card(txt,a.inner_text())
                     item=make_item("HOME'S",area,title,txt,full)
-                    if item['rent'] is None or item['size'] is None: continue
                     seen.add(full); items.append(item)
                 except Exception: pass
             nxt=None
@@ -362,10 +375,11 @@ def scrape_athome(page, area, url):
                     a=links.nth(i); h=a.get_attribute('href') or ''; full=urljoin(page.url,h).split('#')[0]
                     if not valid_property_url('athome',full) or full in seen: continue
                     txt=bounded_card(a)
-                    if not looks_like_property(txt): continue
+                    if not looks_like_property(txt):
+                        # A detail URL itself is enough to defer validation to the detail page.
+                        txt = clean_text(txt or a.inner_text())
                     title=title_from_card(txt,a.inner_text())
                     item=make_item('at home',area,title,txt,full)
-                    if item['rent'] is None or item['size'] is None: continue
                     seen.add(full); items.append(item)
                 except Exception: pass
             nxt=None
@@ -631,24 +645,42 @@ def main():
                         try: page.close()
                         except Exception: pass
                 rec["seconds"]=round(time.time()-started,1); diagnostics.append(rec)
-        # Validate every rent<=cap property URL individually. No 180-item arbitrary cap:
-        # strict validation is more important than quantity, and prevents cross-card mixing.
+        # 8.8: visit real property detail URLs first, then decide rent/type.
+        # This separates retrieval from eligibility and exposes where candidates disappear.
         unique_urls=[]; seen_urls=set()
         for p in raw_items:
-            if p.get("url") and p["url"] not in seen_urls and p.get("rent") is not None and p["rent"]<=MAX_RENT:
+            if p.get("url") and p["url"] not in seen_urls:
                 seen_urls.add(p["url"]); unique_urls.append(p["url"])
         by_url={p["url"]:p for p in raw_items}
         for u in unique_urls:
             enrich_from_detail(context,by_url[u])
         for rec in diagnostics:
-            rec["detail_validated"]=sum(1 for p in raw_items if p.get("source","").lower().replace("'","") in rec["source"].lower().replace("'","") and p.get("detail_validated"))
+            source_key=re.sub(r"\s+", "", rec["source"].lower().replace("'", ""))
+            src_items=[p for p in raw_items if re.sub(r"\s+", "", p.get("source","").lower().replace("'", "")) in source_key]
+            rec["detail_attempted"]=len(src_items)
+            rec["detail_validated"]=sum(1 for p in src_items if p.get("detail_validated"))
+            rec["under_rent_cap"]=sum(1 for p in src_items if p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+            rec["detached"]=sum(1 for p in src_items if p.get("property_kind")=="戸建て系")
+            rec["apartment"]=sum(1 for p in src_items if p.get("property_kind")=="集合住宅")
+            rec["unknown"]=sum(1 for p in src_items if p.get("property_kind")=="不明")
+            rec["detail_errors"]=sum(1 for p in src_items if p.get("detail_error"))
         browser.close()
     unique=dedupe(raw_items)
     candidates=filter_candidates(unique,official_db)
     new_items,price_down=detect_changes(candidates)
     hist=update_history(candidates)
     valid_hist=valid_history_records(hist)
-    report={"version":VERSION,"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
+    stage_summary={
+        "raw_items": len(raw_items),
+        "unique_detail_urls": len({p.get("url") for p in raw_items if p.get("url")}),
+        "detail_validated": sum(1 for p in raw_items if p.get("detail_validated")),
+        "under_rent_cap": sum(1 for p in raw_items if p.get("rent") is not None and p.get("rent")<=MAX_RENT),
+        "detached": sum(1 for p in raw_items if p.get("property_kind")=="戸建て系"),
+        "apartments": sum(1 for p in raw_items if p.get("property_kind")=="集合住宅"),
+        "unknown": sum(1 for p in raw_items if p.get("property_kind")=="不明"),
+        "detail_errors": sum(1 for p in raw_items if p.get("detail_error")),
+    }
+    report={"version":VERSION,"stage_summary":stage_summary,"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
