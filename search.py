@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.8"
+VERSION = "8.9"
 
 
 def load_json(path, default):
@@ -102,41 +102,59 @@ def make_canonical_id(p):
 
 
 def classify_kind_from_signals(label="", text="", structure="", title=""):
-    """Classify only from property-specific signals. Never default to detached."""
+    """Classify from property-specific detail signals only.
+
+    Important 8.9 rule: a bare "2階建/3階建" is NOT evidence of an apartment;
+    detached houses commonly have multiple floors.  Apartment classification
+    requires an apartment/condo-type signal or a clear multi-unit/building signal.
+    """
     label = clean_text(label)
     structure = clean_text(structure)
     title = clean_text(title)
     text = clean_text(text)
+    combined = " ".join([label, structure, title, text])
 
-    # Strong explicit labels first.
-    if re.search(r"賃貸(?:一戸建て|一戸建|貸家)|(?:^|[\s｜|])(?:一戸建て|一戸建|貸家)(?:$|[\s｜|])", label):
+    detached = r"一戸建て|一戸建|貸家|戸建て|戸建|テラスハウス|タウンハウス|長屋"
+    apartment = r"マンション|アパート|集合住宅|賃貸マンション|賃貸アパート"
+
+    # Explicit property-type labels are strongest.
+    if re.search(rf"(?:物件種別|建物種別|種別)\s*[:：]?\s*(?:賃貸)?(?:{detached})", combined):
         return "戸建て系", "explicit_detached_label"
-    if re.search(r"テラスハウス|タウンハウス|長屋", label):
-        return "戸建て系", "explicit_townhouse_label"
-    if re.search(r"賃貸(?:アパート|マンション)|(?:^|[\s｜|])(?:アパート|マンション)(?:$|[\s｜|])", label):
+    if re.search(rf"(?:物件種別|建物種別|種別)\s*[:：]?\s*(?:{apartment})", combined):
         return "集合住宅", "explicit_apartment_label"
 
-    # Detail-page structure is stronger than generic page text.
-    if re.search(r"\d+\s*階建", structure):
-        return "集合住宅", "multi_story_structure"
-    if re.search(r"(?:一戸建て|一戸建|貸家)", structure):
+    if re.search(rf"(?:賃貸)?(?:{detached})", label):
+        return "戸建て系", "explicit_detached_label"
+    if re.search(rf"(?:賃貸)?(?:{apartment})", label):
+        return "集合住宅", "explicit_apartment_label"
+
+    # Detail-page wording near the actual property-type/structure fields.
+    if re.search(rf"(?:構造|建物構造|建物)\s*[:：]?[^\n。]{{0,40}}(?:{detached})", structure):
         return "戸建て系", "detached_structure"
+    if re.search(rf"(?:構造|建物構造|建物)\s*[:：]?[^\n。]{{0,60}}(?:{apartment})", structure):
+        return "集合住宅", "apartment_structure"
 
-    # Specific detail labels / table rows.
-    if re.search(r"(?:物件種別|建物種別|種別)\s*(?:マンション|アパート)", text):
-        return "集合住宅", "detail_type_row"
-    if re.search(r"(?:物件種別|建物種別|種別)\s*(?:一戸建て|一戸建|貸家)", text):
+    # Apartment terms combined with floor-count/building wording are strong.
+    if re.search(rf"(?:{apartment})[^\n。]{{0,80}}\d+\s*階建", combined) or re.search(rf"\d+\s*階建[^\n。]{{0,80}}(?:{apartment})", combined):
+        return "集合住宅", "apartment_structure"
+    if re.search(r"(?:総階数|所在階|階建)[^\n。]{0,40}(?:マンション|アパート)", combined):
+        return "集合住宅", "apartment_structure"
+
+    # Site-specific phrases frequently appear on detail pages.
+    if re.search(rf"(?:種目|物件タイプ|物件種別|建物タイプ)[^\n]{{0,30}}(?:{detached})", text):
         return "戸建て系", "detail_type_row"
-    if re.search(r"(?:マンション|アパート)\s*\d+階建", text):
-        return "集合住宅", "apartment_structure"
-    if re.search(r"\d+階建.*(?:マンション|アパート)", text):
-        return "集合住宅", "apartment_structure"
+    if re.search(rf"(?:種目|物件タイプ|物件種別|建物タイプ)[^\n]{{0,30}}(?:{apartment})", text):
+        return "集合住宅", "detail_type_row"
 
-    # Title is useful only as a supporting signal when no contradictory detail signal exists.
+    # Title is a supporting signal only when it is property-specific.
+    if re.search(r"(?:貸家|一戸建て|一戸建|戸建て|テラスハウス|タウンハウス|長屋)$", title):
+        return "戸建て系", "detached_title"
     if re.search(r"(?:マンション|レジデンス|ハイツ|コーポ|パレス|ビル)$", title):
         return "集合住宅", "residential_building_title"
-    if re.search(r"(?:貸家|一戸建て|一戸建)$", title):
-        return "戸建て系", "detached_title"
+
+    # A title/name containing apartment terminology anywhere is useful if no contradictory signal exists.
+    if re.search(rf"(?:{apartment})", title):
+        return "集合住宅", "residential_title"
 
     return "不明", "no_property_specific_signal"
 
@@ -492,35 +510,63 @@ def extract_detail_structured(page, area):
     return result
 
 
-def enrich_from_detail(context, p):
-    page=context.new_page()
-    try:
-        page.goto(p["url"],wait_until="domcontentloaded",timeout=20000)
-        page.wait_for_timeout(900)
-        d=extract_detail_structured(page,p.get("area",""))
-        if d.get("address") and has_full_address(d["address"]): p["address"]=d["address"]
-        if d.get("layout"): p["layout"]=d["layout"]
-        if d.get("size") is not None: p["size"]=d["size"]
-        if d.get("rent") is not None: p["rent"]=d["rent"]
-        if d.get("title") and len(d["title"])<100: p["title"]=d["title"]
-        p["detail_text"]=d.get("detail_text","")[:12000]
-        p["property_label"]=d.get("property_label") or p.get("property_label","")
-        # Structure comes from the detail page only. This is intentionally strict.
-        kind, reason=classify_kind_from_signals(
-            p.get("property_label","") or d.get("property_label",""), d.get("detail_text",""), d.get("structure",""), p.get("title","")
-        )
-        p["property_kind"]=kind
-        p["classification_reason"]=reason
-        p["detail_validated"]=kind in ("戸建て系","集合住宅") and bool(d.get("address"))
-        p["detail_source"]=p.get("url")
-        return p
-    except Exception as e:
-        p["detail_validated"]=False
-        p["detail_error"]=repr(e)[:300]
-        return p
-    finally:
-        try: page.close()
-        except Exception: pass
+def extract_detail_title(page):
+    for selector in ["h1", "meta[property='og:title']", "title"]:
+        try:
+            el=page.locator(selector).first
+            if el.count():
+                val=clean_text(el.get_attribute("content") if selector.startswith("meta") else el.inner_text())
+                val=safe_title(val)
+                if val:
+                    return val
+        except Exception:
+            pass
+    return ""
+
+
+def enrich_from_detail(page, p):
+    """Validate one real property detail URL using a single reusable page.
+
+    8.9 separates page retrieval from property classification. A page can be
+    successfully loaded even when its property type cannot be parsed.
+    """
+    p["detail_page_ok"] = False
+    p["detail_validated"] = False
+    p["detail_error"] = ""
+    for attempt in range(1,4):
+        try:
+            page.goto(p["url"], wait_until="domcontentloaded", timeout=REQUEST_TIMEOUT_MS)
+            page.wait_for_timeout(1200 if attempt == 1 else 1800)
+            body=clean_text(page.locator("body").inner_text(timeout=8000))
+            if len(body) < 200:
+                raise RuntimeError(f"detail_body_too_short:{len(body)}")
+            p["detail_page_ok"] = True
+            d=extract_detail_structured(page,p.get("area",""))
+            title=extract_detail_title(page) or d.get("title","")
+            if title and len(title)<120: p["title"]=title
+            if d.get("address") and has_full_address(d["address"]): p["address"]=d["address"]
+            if d.get("layout"): p["layout"]=d["layout"]
+            if d.get("size") is not None: p["size"]=d["size"]
+            if d.get("rent") is not None: p["rent"]=d["rent"]
+            p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
+            p["property_label"]=d.get("property_label") or p.get("property_label","")
+            kind,reason=classify_kind_from_signals(
+                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""), p.get("title","")
+            )
+            p["property_kind"]=kind
+            p["classification_reason"]=reason
+            p["detail_validated"]=kind in ("戸建て系","集合住宅") and has_full_address(p.get("address",""))
+            p["detail_source"]=p.get("url")
+            if p["detail_validated"]:
+                p["detail_attempts"]=attempt
+                return p
+            p["detail_error"] = "loaded_but_type_or_address_unresolved"
+        except Exception as e:
+            p["detail_error"]=repr(e)[:400]
+        if attempt < 3:
+            time.sleep(0.7*attempt)
+    p["detail_attempts"]=3
+    return p
 
 
 def dedupe(items):
@@ -626,45 +672,53 @@ def main():
     diagnostics=[]; raw_items=[]; official_db=build_official_db()
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
-        context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP")
+        context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP",viewport={"width":1365,"height":900})
+        # One reusable detail page prevents 8.8's repeated new-page/browser-resource
+        # behavior from turning most otherwise valid URLs into apparent failures.
+        detail_page=context.new_page()
         for area,sources in AREAS.items():
             for source,url in sources.items():
-                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_validated":0,"error":"","body_chars":0,"attempts":0}
-                for attempt in range(2):
+                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
+                for attempt in range(1,3):
                     page=context.new_page()
                     try:
-                        rec["attempts"]=attempt+1
+                        rec["attempts"]=attempt
                         if source=="suumo": items,raw=scrape_suumo(page,area,url)
                         elif source=="homes": items,raw=scrape_homes(page,area,url)
                         else: items,raw=scrape_athome(page,area,url)
-                        rec["raw"]=raw; rec["parsed"]=len(items); rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000)); rec["status"]="OK" if items else "RETRIEVAL_ZERO"
+                        rec["raw"]=raw; rec["parsed"]=len(items)
+                        try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
+                        except Exception: pass
+                        rec["status"]="OK" if items else "RETRIEVAL_ZERO"
                         if items: raw_items.extend(items); break
-                    except PlaywrightTimeoutError as e: rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
-                    except Exception as e: rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                    except PlaywrightTimeoutError as e:
+                        rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                    except Exception as e:
+                        rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
                     finally:
                         try: page.close()
                         except Exception: pass
-                rec["seconds"]=round(time.time()-started,1); diagnostics.append(rec)
-        # 8.8: visit real property detail URLs first, then decide rent/type.
-        # This separates retrieval from eligibility and exposes where candidates disappear.
-        unique_urls=[]; seen_urls=set()
-        for p in raw_items:
-            if p.get("url") and p["url"] not in seen_urls:
-                seen_urls.add(p["url"]); unique_urls.append(p["url"])
-        by_url={p["url"]:p for p in raw_items}
-        for u in unique_urls:
-            enrich_from_detail(context,by_url[u])
-        for rec in diagnostics:
-            source_key=re.sub(r"\s+", "", rec["source"].lower().replace("'", ""))
-            src_items=[p for p in raw_items if re.sub(r"\s+", "", p.get("source","").lower().replace("'", "")) in source_key]
-            rec["detail_attempted"]=len(src_items)
-            rec["detail_validated"]=sum(1 for p in src_items if p.get("detail_validated"))
-            rec["under_rent_cap"]=sum(1 for p in src_items if p.get("rent") is not None and p.get("rent")<=MAX_RENT)
-            rec["detached"]=sum(1 for p in src_items if p.get("property_kind")=="戸建て系")
-            rec["apartment"]=sum(1 for p in src_items if p.get("property_kind")=="集合住宅")
-            rec["unknown"]=sum(1 for p in src_items if p.get("property_kind")=="不明")
-            rec["detail_errors"]=sum(1 for p in src_items if p.get("detail_error"))
+
+                # Detail validation is performed only for URLs actually retrieved from this source.
+                source_items=[p for p in raw_items if p.get("area")==area and p.get("source")==({"suumo":"SUUMO","homes":"HOME'S","athome":"at home"}.get(source,source))]
+                # Deduplicate by URL before opening details.
+                local={p.get("url"):p for p in source_items if p.get("url")}
+                rec["detail_attempted"]=len(local)
+                for p in local.values():
+                    enrich_from_detail(detail_page,p)
+                rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
+                rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
+                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+                rec["detached"]=sum(1 for p in local.values() if p.get("property_kind")=="戸建て系")
+                rec["apartment"]=sum(1 for p in local.values() if p.get("property_kind")=="集合住宅")
+                rec["unknown"]=sum(1 for p in local.values() if p.get("property_kind")=="不明")
+                rec["detail_errors"]=sum(1 for p in local.values() if p.get("detail_error"))
+                rec["seconds"]=round(time.time()-started,1)
+                diagnostics.append(rec)
+        try: detail_page.close()
+        except Exception: pass
         browser.close()
+
     unique=dedupe(raw_items)
     candidates=filter_candidates(unique,official_db)
     new_items,price_down=detect_changes(candidates)
@@ -673,6 +727,7 @@ def main():
     stage_summary={
         "raw_items": len(raw_items),
         "unique_detail_urls": len({p.get("url") for p in raw_items if p.get("url")}),
+        "detail_page_ok": sum(1 for p in raw_items if p.get("detail_page_ok")),
         "detail_validated": sum(1 for p in raw_items if p.get("detail_validated")),
         "under_rent_cap": sum(1 for p in raw_items if p.get("rent") is not None and p.get("rent")<=MAX_RENT),
         "detached": sum(1 for p in raw_items if p.get("property_kind")=="戸建て系"),
