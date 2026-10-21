@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.10"
+VERSION = "8.11"
 
 
 def load_json(path, default):
@@ -101,63 +101,63 @@ def make_canonical_id(p):
     return f"url|{norm(url)}|{title}|{rent}|{layout}|{size}|{area}"
 
 
-def classify_kind_from_signals(label="", text="", structure="", title=""):
-    """Classify from property-specific detail signals only.
+def classify_kind_from_signals(label="", text="", structure="", title="", type_evidence=""):
+    """Classify from property-specific signals only.
 
-    Important 8.9 rule: a bare "2階建/3階建" is NOT evidence of an apartment;
-    detached houses commonly have multiple floors.  Apartment classification
-    requires an apartment/condo-type signal or a clear multi-unit/building signal.
+    8.11: never classify a property as an apartment merely because the word
+    'マンション'/'アパート' appears somewhere in page-wide navigation,
+    recommendation widgets, or footer text.  Explicit type rows and
+    property-specific title signals take priority.
     """
     label = clean_text(label)
     structure = clean_text(structure)
     title = clean_text(title)
     text = clean_text(text)
-    combined = " ".join([label, structure, title, text])
+    type_evidence = clean_text(type_evidence)
 
-    detached = r"一戸建て|一戸建|貸家|戸建て|戸建|テラスハウス|タウンハウス|長屋"
-    apartment = r"マンション|アパート|集合住宅|賃貸マンション|賃貸アパート"
+    detached = r"一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋"
+    apartment = r"マンション|アパート|集合住宅|賃貸マンション|賃貸アパート|貸マンション|貸アパート|貸家以外の共同住宅"
 
-    # Explicit property-type labels are strongest.
-    if re.search(rf"(?:物件種別|建物種別|種別)\s*[:：]?\s*(?:賃貸)?(?:{detached})", combined):
+    # 1) Explicit extracted type value is authoritative.
+    if re.search(rf"^(?:賃貸)?(?:{detached})$", label):
         return "戸建て系", "explicit_detached_label"
-    if re.search(rf"(?:物件種別|建物種別|種別)\s*[:：]?\s*(?:{apartment})", combined):
+    if re.search(rf"^(?:賃貸)?(?:{apartment})$", label):
         return "集合住宅", "explicit_apartment_label"
 
-    if re.search(rf"(?:賃貸)?(?:{detached})", label):
-        return "戸建て系", "explicit_detached_label"
-    if re.search(rf"(?:賃貸)?(?:{apartment})", label):
-        return "集合住宅", "explicit_apartment_label"
-
-    # Detail-page wording near the actual property-type/structure fields.
-    if re.search(rf"(?:構造|建物構造|建物)\s*[:：]?[^\n。]{{0,40}}(?:{detached})", structure):
-        return "戸建て系", "detached_structure"
-    if re.search(rf"(?:構造|建物構造|建物)\s*[:：]?[^\n。]{{0,60}}(?:{apartment})", structure):
-        return "集合住宅", "apartment_structure"
-
-    # Apartment terms combined with floor-count/building wording are strong.
-    if re.search(rf"(?:{apartment})[^\n。]{{0,80}}\d+\s*階建", combined) or re.search(rf"\d+\s*階建[^\n。]{{0,80}}(?:{apartment})", combined):
-        return "集合住宅", "apartment_structure"
-    if re.search(r"(?:総階数|所在階|階建)[^\n。]{0,40}(?:マンション|アパート)", combined):
-        return "集合住宅", "apartment_structure"
-
-    # Site-specific phrases frequently appear on detail pages.
-    if re.search(rf"(?:種目|物件タイプ|物件種別|建物タイプ)[^\n]{{0,30}}(?:{detached})", text):
+    # 2) The type evidence comes only from a labeled property-type row.
+    if re.search(rf"(?:{detached})", type_evidence):
         return "戸建て系", "detail_type_row"
-    if re.search(rf"(?:種目|物件タイプ|物件種別|建物タイプ)[^\n]{{0,30}}(?:{apartment})", text):
+    if re.search(rf"(?:{apartment})", type_evidence):
         return "集合住宅", "detail_type_row"
 
-    # Title is a supporting signal only when it is property-specific.
-    if re.search(r"(?:貸家|一戸建て|一戸建|戸建て|テラスハウス|タウンハウス|長屋)$", title):
+    # 3) Site/detail structure evidence can identify the building type.
+    if re.search(rf"(?:{detached})", structure):
+        return "戸建て系", "detached_structure"
+    if re.search(rf"(?:{apartment})", structure):
+        return "集合住宅", "apartment_structure"
+
+    # 4) Property-specific title is a safe supporting signal.
+    if re.search(rf"(?:{detached})(?:\s*賃貸)?$", title):
         return "戸建て系", "detached_title"
     if re.search(r"(?:マンション|レジデンス|ハイツ|コーポ|パレス|ビル)$", title):
         return "集合住宅", "residential_building_title"
-
-    # A title/name containing apartment terminology anywhere is useful if no contradictory signal exists.
-    if re.search(rf"(?:{apartment})", title):
+    if re.search(r"(?:アパート|マンション)", title):
         return "集合住宅", "residential_title"
 
-    return "不明", "no_property_specific_signal"
+    # 5) Only inspect a short set of lines that look like type rows.
+    # Never search the entire body for apartment words: site navigation often
+    # contains those words even on a detached-house detail page.
+    for line in text.splitlines():
+        line=clean_text(line)
+        if not line or len(line)>180:
+            continue
+        if re.search(r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別|建物)", line):
+            if re.search(rf"(?:{detached})", line):
+                return "戸建て系", "detail_type_line"
+            if re.search(rf"(?:{apartment})", line):
+                return "集合住宅", "detail_type_line"
 
+    return "不明", "no_property_specific_signal"
 
 def score_property(p):
     text = " ".join([p.get("title", ""), p.get("description", ""), p.get("property_label", "")])
@@ -437,31 +437,56 @@ def jsonld_value(obj, key):
     return v or ""
 
 
+def extract_type_evidence_from_text(text):
+    """Return only values found next to explicit property-type labels.
+
+    This intentionally ignores arbitrary occurrences of apartment words in the
+    page body, because portal navigation/recommendation blocks commonly contain
+    them.
+    """
+    vals=[]
+    labels=r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)"
+    types=r"(?:賃貸)?(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション)"
+    for line in clean_text(text).splitlines():
+        line=clean_text(line)
+        if not line or len(line)>220:
+            continue
+        m=re.search(rf"{labels}\s*(?:[:：]\s*|\s+){types}",line)
+        if m:
+            vals.append(m.group(0))
+            continue
+        # Some portals render label and value as adjacent text without punctuation.
+        if re.search(labels,line) and re.search(types,line):
+            vals.append(line)
+    return " | ".join(dict.fromkeys(vals))[:1500]
+
+
 def extract_detail_structured(page, area, source=""):
     """Source-specific detail extraction with safe body fallbacks."""
     """Extract only property-detail signals; generic search-page UI is ignored."""
-    result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":""}
+    result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":"","type_evidence":""}
 
     # First inspect source-specific detail containers. These are only hints;
     # the rendered detail body remains the fallback. We never use a search-card
     # ancestor as the authoritative property type.
     source_selectors = {
-        "SUUMO": [".property_data", ".data_table", ".detail_info", "dl"],
-        "HOME'S": ["dl", "table", "[class*=detail]", "[class*=property]"],
-        "at home": ["dl", "table", "[class*=detail]", "[class*=property]"],
+        "SUUMO": [".property_data", ".data_table", ".detail_info", ".detail", "dl", "table"],
+        "HOME'S": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
+        "at home": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
     }
     chunks=[]
     for sel in source_selectors.get(source, []):
         try:
             loc=page.locator(sel)
-            for i in range(min(loc.count(), 10)):
+            for i in range(min(loc.count(), 30)):
                 t=clean_text(loc.nth(i).inner_text(timeout=1200))
                 if t and len(t)<=6000: chunks.append(t)
         except Exception:
             pass
     if chunks:
         joined=" ".join(chunks)
-        m=re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|賃貸アパート|アパート|賃貸マンション|マンション|テラスハウス|タウンハウス|長屋)", joined)
+        result["type_evidence"]=extract_type_evidence_from_text(joined)
+        m=re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)", joined)
         if m: result["property_label"]=m.group(1)
         a=extract_address(joined,area)
         if a: result["address"]=a
@@ -512,26 +537,36 @@ def extract_detail_structured(page, area, source=""):
     if result["size"] is None: result["size"]=parse_area(body)
     if not result["layout"]: result["layout"]=parse_layout(body)
 
-    # Prefer labels close to the property-type field. Avoid generic navigation phrases.
-    label_patterns=[
-        r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|賃貸アパート|アパート|賃貸マンション|マンション|テラスハウス|タウンハウス|長屋)",
-        r"(?:賃貸|貸し)\s*(一戸建て|一戸建|貸家|アパート|マンション|テラスハウス|タウンハウス|長屋)",
-    ]
-    for pat in label_patterns:
-        m=re.search(pat,body)
+    # Prefer exact labeled rows in the rendered body.
+    body_type_evidence=extract_type_evidence_from_text(body)
+    if body_type_evidence:
+        result["type_evidence"]=" | ".join(dict.fromkeys(
+            [x for x in [result.get("type_evidence",""), body_type_evidence] if x]
+        ))[:1500]
+        m=re.search(r"(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)", body_type_evidence)
         if m:
-            result["property_label"]=m.group(1); break
+            result["property_label"]=m.group(0)
+
     if not result["property_label"]:
-        # Common site-specific phrases that identify the actual listing type.
-        m=re.search(r"(?:賃貸|建物)\s*(一戸建て|一戸建|貸家|テラスハウス|タウンハウス|長屋|マンション|アパート)",body)
-        if m: result["property_label"]=m.group(1)
-    if not result["property_label"]:
-        m=re.search(r"(一戸建て|一戸建|貸家|テラスハウス|タウンハウス|長屋|マンション|アパート)\s*(?:の)?\s*賃貸",body)
-        if m: result["property_label"]=m.group(1)
-    if not result["property_label"]:
-        # Search a compact window around floor-count / structure terms.
-        m=re.search(r"([^。\n]{0,80}(?:\d+階建|一戸建て|一戸建|貸家|マンション|アパート)[^。\n]{0,80})",body)
-        if m: result["structure"]=m.group(1)
+        # Common site-specific phrases with an explicit label/value relationship.
+        for line in body.splitlines():
+            line=clean_text(line)
+            if len(line)>220 or not line:
+                continue
+            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)",line):
+                m=re.search(r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",line)
+                if m:
+                    result["property_label"]=m.group(1)
+                    break
+
+    # Structure evidence is also limited to lines explicitly describing structure.
+    structure_lines=[]
+    for line in body.splitlines():
+        line=clean_text(line)
+        if re.search(r"(?:構造|建物構造|建築|建物種別|建物タイプ)",line) and len(line)<=220:
+            structure_lines.append(line)
+    if structure_lines:
+        result["structure"]=" | ".join(dict.fromkeys(structure_lines))[:1800]
     return result
 
 
@@ -585,8 +620,10 @@ def enrich_from_detail(page, p):
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
             p["property_label"]=d.get("property_label") or p.get("property_label","")
             kind,reason=classify_kind_from_signals(
-                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""), p.get("title","")
+                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""),
+                p.get("title",""), d.get("type_evidence","")
             )
+            p["type_evidence"]=d.get("type_evidence","")[:1500]
             p["property_kind"]=kind
             p["classification_reason"]=reason
             p["detail_validated"]=kind in ("戸建て系","集合住宅") and has_full_address(p.get("address",""))
@@ -780,7 +817,24 @@ def main():
         ms=match_official(p,official_db)
         official_probe.append({"source":p.get("source"),"title":p.get("title"),"address":p.get("address"),"url":p.get("url"),"matches":len(ms),"levels":sorted(set(x.get("match_level") for x in ms if x.get("match_level")))})
     official_probe_summary={"apartment_records_checked":len(official_probe),"matched":sum(1 for x in official_probe if x.get("matches")),"unmatched":sum(1 for x in official_probe if not x.get("matches"))}
-    report={"version":VERSION,"stage_summary":stage_summary,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
+    reason_counts={}
+    for p in stage_items:
+        if p.get("detail_validated"):
+            r=p.get("classification_reason") or "unknown_reason"
+            reason_counts[r]=reason_counts.get(r,0)+1
+    unresolved_samples=[]
+    for p in stage_items:
+        if p.get("detail_page_ok") and not p.get("detail_validated"):
+            unresolved_samples.append({
+                "source":p.get("source"),"area":p.get("area"),"title":p.get("title"),
+                "address":p.get("address"),"url":p.get("url"),
+                "property_label":p.get("property_label"),
+                "type_evidence":p.get("type_evidence"),
+                "structure":p.get("structure"),
+                "classification_reason":p.get("classification_reason")
+            })
+            if len(unresolved_samples)>=100: break
+    report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
