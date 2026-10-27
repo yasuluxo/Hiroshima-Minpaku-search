@@ -1,31 +1,20 @@
 {
   "version": "8.11",
   "stage_summary": {
-    "raw_items": 209,
-    "unique_detail_urls": 209,
-    "detail_page_ok": 209,
-    "detail_validated": 61,
-    "under_rent_cap": 61,
+    "raw_items": 221,
+    "unique_detail_urls": 221,
+    "detail_page_ok": 221,
+    "detail_validated": 69,
+    "under_rent_cap": 69,
     "detached": 0,
-    "apartments": 61,
-    "unknown": 148,
+    "apartments": 69,
+    "unknown": 152,
     "detail_errors": 0
   },
   "classification_reason_counts": {
-    "explicit_apartment_label": 61
+    "explicit_apartment_label": 69
   },
   "unresolved_samples": [
-    {
-      "source": "SUUMO",
-      "area": "中区",
-      "title": "広島電鉄江波線 舟入川口町駅 3階建 築4年",
-      "address": "",
-      "url": "https://suumo.jp/chintai/jnc_000110712603/?bc=100533715764",
-      "property_label": "アパート",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "explicit_apartment_label"
-    },
     {
       "source": "SUUMO",
       "area": "中区",
@@ -40,10 +29,10 @@
     {
       "source": "SUUMO",
       "area": "中区",
-      "title": "広島電鉄江波線 舟入川口町駅 3階建 築4年",
+      "title": "グレイスコート昭和町",
       "address": "",
-      "url": "https://suumo.jp/chintai/jnc_000110712607/?bc=100533715798",
-      "property_label": "アパート",
+      "url": "https://suumo.jp/chintai/jnc_000038654605/?bc=100533773417",
+      "property_label": "マンション",
       "type_evidence": "",
       "structure": null,
       "classification_reason": "explicit_apartment_label"
@@ -51,20 +40,9 @@
     {
       "source": "SUUMO",
       "area": "中区",
-      "title": "REGALEST-F 江波本町 101号室",
+      "title": "広島電鉄皆実線 比治山橋駅 5階建 築19年",
       "address": "",
-      "url": "https://suumo.jp/chintai/jnc_000109500238/?bc=100528463621",
-      "property_label": "アパート",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "explicit_apartment_label"
-    },
-    {
-      "source": "SUUMO",
-      "area": "中区",
-      "title": "ＦＬＡＸ十日市",
-      "address": "",
-      "url": "https://suumo.jp/chintai/jnc_000110674121/?bc=100533416490",
+      "url": "https://suumo.jp/chintai/jnc_000109822377/?bc=100526793990",
       "property_label": "マンション",
       "type_evidence": "",
       "structure": null,
@@ -86,7 +64,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/cedc8f8e6f45f2de8c8cbb57b47f4c92ae345eda/",
+      "url": "https://www.homes.co.jp/chintai/room/a79bb0ba685544ec210acaebd8b68937406cd4c5/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -97,7 +75,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/d14d52866aa18f27ffb23a64c11264ce4a105dfc/",
+      "url": "https://www.homes.co.jp/chintai/room/975e3e930ce077917267b483a73c6e4c5a243b1b/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -108,7 +86,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/ca941bc15ba6bed2fdd37a4f825f01c0cea15af1/",
+      "url": "https://www.homes.co.jp/chintai/room/e6de837859236b0b6607ab784dbad0242ee14d42/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -119,7 +97,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/c2f5170692c65bdb2e74017d32ef5a9815373dd9/",
+      "url": "https://www.homes.co.jp/chintai/room/9c0e30d5dd32e88b42ec12f8219b38e4e808fbbe/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -130,7 +108,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/4e8578f450fe1b6a11e93f90ff6dde0cf3ce4803/",
+      "url": "https://www.homes.co.jp/chintai/room/f250d71c3855171db3dc5149e1787d3b3cb5fd30/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -141,7 +119,117 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/e48b50718fdcc86363412c84006e96d2be02d111/",
+      "url": "https://www.homes.co.jp/chintai/room/b621086591e4722fc586c75e5b4e7b7f1efa3fef/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/71e9b36cb7d801df47685468d0339343619a2163/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/f7867eb955f36e72c4e8f5ec87cf7ab25ed2b94d/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/827dd1d4e7a420b06657292800877b3a0b5762d9/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/eceee1815d87d0adec5efbf554ba3eeb0cf5a8c6/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/9930bdffff246b8356353b15aa996e78223dbe4c/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/6fd88835916751e4fbb29a7497d1d0cd89740954/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/46f70f06b00b71b524d2bfd57c5d87bef64a2640/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/6bc6ff49c4a4445a28aa135953a1ae649650dc57/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/e23c54abf06560b75f6822d2e41a972334fb2dff/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/24f968ec73a1ff1be0116b4b34cc99ac63387b94/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -174,7 +262,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/699e1f4ff5ae74f68162c97a3862e1db11d19094/",
+      "url": "https://www.homes.co.jp/chintai/room/5da60ecae52fb6f6a03ba9f7968f9474df1c5f1f/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -185,7 +273,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/5da60ecae52fb6f6a03ba9f7968f9474df1c5f1f/",
+      "url": "https://www.homes.co.jp/chintai/room/699e1f4ff5ae74f68162c97a3862e1db11d19094/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -273,17 +361,6 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/49f6c65b19eb4b15ffd08c815e75c0788958fc3f/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
       "url": "https://www.homes.co.jp/chintai/room/7b81953729bd2bb080090f4c856be4dd88ac2c65/",
       "property_label": "",
       "type_evidence": "",
@@ -296,6 +373,17 @@
       "title": "Let's confirm you are human",
       "address": "",
       "url": "https://www.homes.co.jp/chintai/room/6f7c87e802a7caac04205ea09cade5745966afcd/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/49f6c65b19eb4b15ffd08c815e75c0788958fc3f/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -339,17 +427,6 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/9a9d0277f75a639e2b887dda1f478485e6cd2e11/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
       "url": "https://www.homes.co.jp/chintai/room/0a07d5cdb5eff1ca1043f9b5a52073a87a929d19/",
       "property_label": "",
       "type_evidence": "",
@@ -361,7 +438,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/1206a408e8ed3eefc77d13721a3eace48d1ecb83/",
+      "url": "https://www.homes.co.jp/chintai/room/9a9d0277f75a639e2b887dda1f478485e6cd2e11/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -372,7 +449,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/5e8c7a63a760607fafe083d544d23a1f8319fb11/",
+      "url": "https://www.homes.co.jp/chintai/room/9fb3ef9eff845d9ea3cc3edc48ab51029bdbb22f/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -383,7 +460,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/2bdca570f0a692d328d0e6e626f8f87302ababf5/",
+      "url": "https://www.homes.co.jp/chintai/room/c7374335d3acb93c1de9bb1d683ecea0d95e9aad/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -394,7 +471,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/385769ba2709a5c9736bfe8d4e8925b79697aaca/",
+      "url": "https://www.homes.co.jp/chintai/room/3d30b23413f107c9bba467de714099a1282e00b5/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -405,7 +482,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/d243c642a296b40de5ac125f5e51c68ff1b46197/",
+      "url": "https://www.homes.co.jp/chintai/room/2e14e974a528946a1d561ebda715799973475c9c/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -416,128 +493,7 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/71a260f230623c9c16f8c6dfb86a8ff0b17b9b32/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/9f11dcbcf6bdb0536fc97f823ea718c315af2068/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/b1fb0999b48626525951e4f6fcd9ba769e0a44da/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/43dbe4150d490dd3453690eb349dac2ec8da5af9/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/727011135464aacecf6e7c7b0a80e7f09dd1884e/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/42c96dd2970f54fc38cbd6c4b6e03e4107891f93/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/077a5b7eed75a20d473cfa2a73aae7a6582ea4e4/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/ae0ef92c12cdb9f242fd6c29bc6fbbdad3197b3e/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/dc699a4e3bee3b4e34d12bca7100afb2dc4c1d10/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/ffa18d3b4e3f3d1de3894d636c940d1c9411f165/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/998e5170cfa8fef2d02d503ace826e50bbc08350/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/0ad7c4a9596a291a8d5b1e2d48921ea189444353/",
+      "url": "https://www.homes.co.jp/chintai/room/24ab1295208a0c7c2ad68ed3dcfeb66a0348994c/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -669,6 +625,171 @@
       "area": "中区",
       "title": "Let's confirm you are human",
       "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/727011135464aacecf6e7c7b0a80e7f09dd1884e/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/385769ba2709a5c9736bfe8d4e8925b79697aaca/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/d243c642a296b40de5ac125f5e51c68ff1b46197/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/71a260f230623c9c16f8c6dfb86a8ff0b17b9b32/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/9f11dcbcf6bdb0536fc97f823ea718c315af2068/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/b1fb0999b48626525951e4f6fcd9ba769e0a44da/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/43dbe4150d490dd3453690eb349dac2ec8da5af9/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/42c96dd2970f54fc38cbd6c4b6e03e4107891f93/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/ab723db55405b3bcab4c98b9258e4eeacc001316/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/ae0ef92c12cdb9f242fd6c29bc6fbbdad3197b3e/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/077a5b7eed75a20d473cfa2a73aae7a6582ea4e4/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/dc699a4e3bee3b4e34d12bca7100afb2dc4c1d10/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/ffa18d3b4e3f3d1de3894d636c940d1c9411f165/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/998e5170cfa8fef2d02d503ace826e50bbc08350/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/2bdca570f0a692d328d0e6e626f8f87302ababf5/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
       "url": "https://www.homes.co.jp/chintai/room/50536779d443d00e9ab439e422585fc0d741da5e/",
       "property_label": "",
       "type_evidence": "",
@@ -692,6 +813,28 @@
       "title": "Let's confirm you are human",
       "address": "",
       "url": "https://www.homes.co.jp/chintai/room/2abf5b0642143f35dd177532b49e2c544fac6923/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/51d33edf57414b0c13a19abbbf7e0f9f42b7c61f/",
+      "property_label": "",
+      "type_evidence": "",
+      "structure": null,
+      "classification_reason": "no_property_specific_signal"
+    },
+    {
+      "source": "HOME'S",
+      "area": "中区",
+      "title": "Let's confirm you are human",
+      "address": "",
+      "url": "https://www.homes.co.jp/chintai/room/cdeee783b604944e9f669463c034b4b944416b28/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -797,33 +940,11 @@
       "classification_reason": "no_property_specific_signal"
     },
     {
-      "source": "HOME'S",
+      "source": "at home",
       "area": "中区",
-      "title": "Let's confirm you are human",
+      "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/8bd6114e1c21e7bb6e38e9c9b45305073d231d61/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/4938e3b26f989fc380280c5dd50a4f6adcdd8ee9/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "HOME'S",
-      "area": "中区",
-      "title": "Let's confirm you are human",
-      "address": "",
-      "url": "https://www.homes.co.jp/chintai/room/fd46aa46ee4c4d990ec9da3a3837148df80a35c2/",
+      "url": "https://www.athome.co.jp/chintai/1026039157/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -834,7 +955,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383434/",
+      "url": "https://www.athome.co.jp/chintai/1026039857/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -845,7 +966,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383534/",
+      "url": "https://www.athome.co.jp/chintai/1026040757/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -856,7 +977,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383634/",
+      "url": "https://www.athome.co.jp/chintai/1026041057/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -867,7 +988,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383734/",
+      "url": "https://www.athome.co.jp/chintai/1103491634/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -878,7 +999,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383834/",
+      "url": "https://www.athome.co.jp/chintai/1101387734/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -889,7 +1010,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1095652667/",
+      "url": "https://www.athome.co.jp/chintai/1101391334/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -900,7 +1021,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1117567019/",
+      "url": "https://www.athome.co.jp/chintai/1101396834/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -911,7 +1032,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381934/",
+      "url": "https://www.athome.co.jp/chintai/1101403434/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -922,7 +1043,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382034/",
+      "url": "https://www.athome.co.jp/chintai/1101412734/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -933,7 +1054,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382134/",
+      "url": "https://www.athome.co.jp/chintai/1100373934/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -944,7 +1065,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382234/",
+      "url": "https://www.athome.co.jp/chintai/1100375334/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -955,7 +1076,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382334/",
+      "url": "https://www.athome.co.jp/chintai/1100377834/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -966,7 +1087,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382434/",
+      "url": "https://www.athome.co.jp/chintai/1100380934/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -977,7 +1098,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382534/",
+      "url": "https://www.athome.co.jp/chintai/1100386734/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -988,128 +1109,7 @@
       "area": "中区",
       "title": "認証にご協力ください。",
       "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382634/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382734/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103383934/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103384134/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103384234/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103384334/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381434/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381534/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381634/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381734/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103381834/",
-      "property_label": "",
-      "type_evidence": "",
-      "structure": null,
-      "classification_reason": "no_property_specific_signal"
-    },
-    {
-      "source": "at home",
-      "area": "中区",
-      "title": "認証にご協力ください。",
-      "address": "",
-      "url": "https://www.athome.co.jp/chintai/1103382934/",
+      "url": "https://www.athome.co.jp/chintai/1100389634/",
       "property_label": "",
       "type_evidence": "",
       "structure": null,
@@ -1117,176 +1117,208 @@
     }
   ],
   "official_probe_summary": {
-    "apartment_records_checked": 61,
+    "apartment_records_checked": 69,
     "matched": 0,
-    "unmatched": 61
+    "unmatched": 69
   },
   "official_probe": [
     {
       "source": "SUUMO",
+      "title": "月光広島",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000107504898/?bc=100493275054",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
       "title": "ＣＡＳＡニックスII",
       "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000110674123/?bc=100533459141",
+      "url": "https://suumo.jp/chintai/jnc_000110674123/?bc=100533463889",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ル・クール上幟町",
-      "address": "広島市中区大手町1-1-26",
-      "url": "https://suumo.jp/chintai/jnc_000014609552/?bc=100531039240",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "本川町Ｍビル",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000107642391/?bc=100494853168",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "グレイスコート昭和町",
-      "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000110618890/?bc=100532963853",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "フレッド",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000110660150/?bc=100533336603",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "第２迫田ビル",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000103504204/?bc=100478497793",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ベルメゾン新見",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000055856770/?bc=100510049582",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "第１迫田ビル 401号室",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000103504202/?bc=100456577527",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "福本ビル",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000081242502/?bc=100533450301",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ジョイフル２１",
-      "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000110189122/?bc=100530087897",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "REGALEST江波山桜",
-      "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000110674117/?bc=100533431958",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "エトワール舟入中町",
-      "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000092911366/?bc=100532537007",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ＬａＳａｎｔｅ舟入本町",
-      "address": "広島市中区千田町1-3-1",
-      "url": "https://suumo.jp/chintai/jnc_000110521844/?bc=100525307157",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "広島電鉄江波線 舟入本町駅 14階建 築4年",
+      "title": "広島電鉄白島線 白島駅 10階建 築23年",
       "address": "広島市中区十日市町1-1-15",
-      "url": "https://suumo.jp/chintai/jnc_000110554579/?bc=100531350122",
+      "url": "https://suumo.jp/chintai/jnc_000110726598/?bc=100533844334",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "アドバンス舟入南",
+      "title": "ＬＩＦＥＭＥＮＴ＿Ｋ小網町",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000063610724/?bc=100530058345",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄宇品線 鷹野橋駅 10階建 築3年",
+      "address": "広島市中区十日市町1-1-15",
+      "url": "https://suumo.jp/chintai/jnc_000088062754/?bc=100533844339",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ＥＩＧＨＴＶＡＬＬＥＹ ＣａｓｔｌｅＳｉｄｅ",
       "address": "広島市中区大手町3-8-3",
-      "url": "https://suumo.jp/chintai/jnc_000097068351/?bc=100344966962",
+      "url": "https://suumo.jp/chintai/jnc_000110705111/?bc=100533671015",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "アガトン１６６",
-      "address": "広島市南区宇品神田1-2-3",
-      "url": "https://suumo.jp/chintai/jnc_000082207927/?bc=100454629955",
+      "title": "サンライズ昭和",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000110660153/?bc=100533501565",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "メゾン大須賀",
+      "title": "グランディール住吉",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000088036084/?bc=100533749403",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "シャトレ5ビル",
+      "address": "広島市中区十日市町1-1-15",
+      "url": "https://suumo.jp/chintai/jnc_000110726597/?bc=100533844326",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ｔｅｒｒａｃｅ",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000110477953/?bc=100531942882",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ドラークメゾン",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000110477952/?bc=100531967728",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄白島線 女学院前駅 11階建 築44年",
+      "address": "広島市中区十日市町1-1-15",
+      "url": "https://suumo.jp/chintai/jnc_000109277002/?bc=100533844318",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "広島電鉄江波線 舟入本町駅 5階建 築31年",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000108554793/?bc=100502795364",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "SINCERE舟入 302号室",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000079136269/?bc=100450999678",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "柴崎舟入ビル 801号室",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000110579618/?bc=100533854894",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "山田ビル",
+      "address": "広島市中区千田町1-3-1",
+      "url": "https://suumo.jp/chintai/jnc_000058036035/?bc=100497527960",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "グランドマンション舟入",
+      "address": "広島市中区大手町1-1-26",
+      "url": "https://suumo.jp/chintai/jnc_000101580469/?bc=100454586694",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "西蟹屋Ｋ．Ｋ",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000110623268/?bc=100533056068",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "アンジールテラス",
       "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000066501275/?bc=100520983530",
+      "url": "https://suumo.jp/chintai/jnc_000110606844/?bc=100532880123",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ムーンハイツ",
+      "title": "新見ビル",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000110099980/?bc=100529154468",
+      "url": "https://suumo.jp/chintai/jnc_000110166056/?bc=100529831617",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "アーバイン比治山（旧ヴィラ博丈比治山）",
+      "title": "Ｗｈｉｔｅ広島駅前",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000109230349/?bc=100522375715",
+      "url": "https://suumo.jp/chintai/jnc_000104376465/?bc=100533527122",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ＢＡＹＳＩＡ宇品",
-      "address": "広島市南区段原南1-2-15",
-      "url": "https://suumo.jp/chintai/jnc_000109519885/?bc=100525607235",
+      "title": "ＵＬＴＩＭＡＴＥ ＯＮＥ ＢＬＤＧ宇品 404号室",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000110227860/?bc=100533806316",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "河村福祉広島南NO.2 301号室",
-      "address": "広島市南区段原南1-2-15",
-      "url": "https://suumo.jp/chintai/jnc_000110166068/?bc=100529586250",
+      "title": "コーポ福島",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000106786952/?bc=100506499788",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Regalest DS Aosaki",
+      "address": "広島市南区宇品神田1-2-3",
+      "url": "https://suumo.jp/chintai/jnc_000108616177/?bc=100517775259",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "アーバイン比治山",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000109230349/?bc=100522369366",
       "matches": 0,
       "levels": []
     },
@@ -1300,73 +1332,57 @@
     },
     {
       "source": "SUUMO",
-      "title": "へーベルメゾン翠",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000093663869/?bc=100532285975",
+      "title": "Ｇｒａｎｄｔｉｃ Ｒｅｉｍｅｉ",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000109980152/?bc=100503827159",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "グランドメゾン翠町",
+      "title": "ヘーベルメゾン翠",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000105905891/?bc=100458742913",
+      "url": "https://suumo.jp/chintai/jnc_000093663869/?bc=100532483821",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ブルックナー洋光台 A0101号室",
-      "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000108610691/?bc=100508210559",
+      "title": "Ｃａｓａ Ｍａｒｉａ",
+      "address": "広島市南区皆実町6-4-26",
+      "url": "https://suumo.jp/chintai/jnc_000110594321/?bc=100532809082",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "西蟹屋Ｋ．Ｋ",
+      "title": "ファンコート堀越壱番館",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000110623268/?bc=100533039314",
+      "url": "https://suumo.jp/chintai/jnc_000110325200/?bc=100533779193",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "ブルックナー洋光台",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000108610691/?bc=100508230470",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
       "title": "ゼピュロス A棟",
-      "address": "広島市南区段原南1-2-15",
-      "url": "https://suumo.jp/chintai/jnc_000110585824/?bc=100533118498",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ウイング金屋町ステーションサイド",
       "address": "広島市南区出汐1-1-1",
-      "url": "https://suumo.jp/chintai/jnc_000108501893/?bc=100514308861",
+      "url": "https://suumo.jp/chintai/jnc_000110585824/?bc=100533118500",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "Ｇｒａｎｄｔｉｃ Ｂｌａｎｃ （仮ＧＲ東雲２）",
-      "address": "広島市南区皆実町6-4-26",
-      "url": "https://suumo.jp/chintai/jnc_000040633385/?bc=100532256524",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "セブンセブンきむら",
-      "address": "広島市南区段原南1-2-15",
-      "url": "https://suumo.jp/chintai/jnc_000052261869/?bc=100519117082",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "Ｓ－ＲＥＳＩＤＥＮＣＥ宇品５丁目II",
-      "address": "広島市南区宇品神田1-2-3",
-      "url": "https://suumo.jp/chintai/jnc_000110206148/?bc=100529921054",
+      "title": "田部ビル",
+      "address": "広島市南区出汐1-1-1",
+      "url": "https://suumo.jp/chintai/jnc_000071597783/?bc=100506546475",
       "matches": 0,
       "levels": []
     },
@@ -1380,17 +1396,9 @@
     },
     {
       "source": "SUUMO",
-      "title": "広島電鉄宮島線 高須駅 3階建 新築",
-      "address": "広島市西区横川町3-12-17",
-      "url": "https://suumo.jp/chintai/jnc_000109879043/?bc=100523506400",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
       "title": "ＳＨＩＮＹＡ ＢＬＤＧ．II",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110660200/?bc=100533271786",
+      "url": "https://suumo.jp/chintai/jnc_000110660200/?bc=100533335649",
       "matches": 0,
       "levels": []
     },
@@ -1398,7 +1406,15 @@
       "source": "SUUMO",
       "title": "ランコーントル",
       "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000110157473/?bc=100533337483",
+      "url": "https://suumo.jp/chintai/jnc_000110157473/?bc=100533354392",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "LIFEMENT GLANZ YOKOGAWA",
+      "address": "広島市西区横川町3-3-7",
+      "url": "https://suumo.jp/chintai/jnc_000110189161/?bc=100529746487",
       "matches": 0,
       "levels": []
     },
@@ -1406,15 +1422,15 @@
       "source": "SUUMO",
       "title": "ＣＯＺＹ ＣＯＵＲＴ Ｃ棟",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110660197/?bc=100533275665",
+      "url": "https://suumo.jp/chintai/jnc_000110660197/?bc=100533268577",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
       "title": "ル シェリア古江 101号室",
-      "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110678283/?bc=100512605650",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000110678283/?bc=100512752752",
       "matches": 0,
       "levels": []
     },
@@ -1422,15 +1438,7 @@
       "source": "SUUMO",
       "title": "クレール高須台 Ｂ棟 A0102号室",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000109869844/?bc=100533663342",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "鈴が峰第５団地 ５号棟",
-      "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000108059684/?bc=100515573388",
+      "url": "https://suumo.jp/chintai/jnc_000109869844/?bc=100527683842",
       "matches": 0,
       "levels": []
     },
@@ -1438,7 +1446,7 @@
       "source": "SUUMO",
       "title": "カーサ高須",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110660201/?bc=100533271909",
+      "url": "https://suumo.jp/chintai/jnc_000110660201/?bc=100533335776",
       "matches": 0,
       "levels": []
     },
@@ -1446,7 +1454,7 @@
       "source": "SUUMO",
       "title": "メゾン観音ＥＸ",
       "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000110394636/?bc=100523472859",
+      "url": "https://suumo.jp/chintai/jnc_000110394636/?bc=100530624447",
       "matches": 0,
       "levels": []
     },
@@ -1454,31 +1462,55 @@
       "source": "SUUMO",
       "title": "セジュール庚午北ヒルズ",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110705114/?bc=100533613661",
+      "url": "https://suumo.jp/chintai/jnc_000110705114/?bc=100533755849",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "Ｂｒｏｗｎｙ草津 A0201号室",
+      "title": "グランメール高須",
       "address": "広島市西区井口5-1-6",
-      "url": "https://suumo.jp/chintai/jnc_000110394637/?bc=100525136071",
+      "url": "https://suumo.jp/chintai/jnc_000110536117/?bc=100532326083",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "広島電鉄宮島線 草津駅 3階建 築12年",
+      "title": "第3木本ビル",
       "address": "広島市西区己斐本町1-17-2井崎ビル1F",
-      "url": "https://suumo.jp/chintai/jnc_000110409106/?bc=100525047369",
+      "url": "https://suumo.jp/chintai/jnc_000107085496/?bc=100469218645",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ＬＥＣＩＥＬ庚午北",
-      "address": "広島市西区庚午北3-1-2",
-      "url": "https://suumo.jp/chintai/jnc_000106687208/?bc=100529001732",
+      "title": "フィグ古江東町",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000104084030/?bc=100455984405",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Ｂｒｏｗｎｙ草津",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000110394637/?bc=100524832796",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "クレールＡ",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000110435574/?bc=100531539956",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "アルカチッタ",
+      "address": "広島市西区井口5-1-6",
+      "url": "https://suumo.jp/chintai/jnc_000110668452/?bc=100533344714",
       "matches": 0,
       "levels": []
     },
@@ -1486,7 +1518,63 @@
       "source": "SUUMO",
       "title": "アベニュー高須Ｙ",
       "address": "広島市西区横川町2-9-3",
-      "url": "https://suumo.jp/chintai/jnc_000110705115/?bc=100533663339",
+      "url": "https://suumo.jp/chintai/jnc_000110705115/?bc=100533855091",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "第２木本ビル",
+      "address": "広島市西区横川町3-12-1",
+      "url": "https://suumo.jp/chintai/jnc_000080573402/?bc=100322271743",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "恵和レジデンス２",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000103451583/?bc=100452667833",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "佐々木ビル",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000102409890/?bc=100376252508",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "グランメール ２１",
+      "address": "広島市東区光町1-11-9",
+      "url": "https://suumo.jp/chintai/jnc_000110166046/?bc=100529579225",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "エスポワール戸坂山崎",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000110370779/?bc=100516977222",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "フォレストハイム矢賀",
+      "address": "広島市東区光町1-11-9",
+      "url": "https://suumo.jp/chintai/jnc_000110536104/?bc=100533854995",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "グランリューくるめ木",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000097865541/?bc=100496719284",
       "matches": 0,
       "levels": []
     },
@@ -1494,7 +1582,7 @@
       "source": "SUUMO",
       "title": "カメリア ハウス",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110115004/?bc=100533337367",
+      "url": "https://suumo.jp/chintai/jnc_000110115004/?bc=100533825536",
       "matches": 0,
       "levels": []
     },
@@ -1502,7 +1590,7 @@
       "source": "SUUMO",
       "title": "レーヴェンス温品 壱番館",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110473736/?bc=100531969588",
+      "url": "https://suumo.jp/chintai/jnc_000110473736/?bc=100531978742",
       "matches": 0,
       "levels": []
     },
@@ -1510,7 +1598,31 @@
       "source": "SUUMO",
       "title": "エレガンス・ＳＴ",
       "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110652165/?bc=100533261321",
+      "url": "https://suumo.jp/chintai/jnc_000110652165/?bc=100533336863",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Ｆｏｒｅｓｔ Ａｋｅｂｏｎｏ",
+      "address": "広島市東区光町1-11-9",
+      "url": "https://suumo.jp/chintai/jnc_000110409102/?bc=100531860865",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "セジュール湯浅 101号室",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000110421491/?bc=100531582623",
+      "matches": 0,
+      "levels": []
+    },
+    {
+      "source": "SUUMO",
+      "title": "Haus牛田本町通り",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000110652164/?bc=100533505023",
       "matches": 0,
       "levels": []
     },
@@ -1518,101 +1630,53 @@
       "source": "SUUMO",
       "title": "Ｔ－２ＦＬＡＴ",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000073864025/?bc=100530568115",
+      "url": "https://suumo.jp/chintai/jnc_000073864025/?bc=100530600623",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "サンクレスト",
+      "title": "ルクプル Ａ棟",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000047296565/?bc=100533458690",
+      "url": "https://suumo.jp/chintai/jnc_000048261379/?bc=100512581330",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "レーヴェンス温品 弐番館",
+      "title": "ルクプル Ｂ棟",
       "address": "広島市東区光町2-6-12",
-      "url": "https://suumo.jp/chintai/jnc_000110652168/?bc=100533337764",
+      "url": "https://suumo.jp/chintai/jnc_000110536106/?bc=100532337527",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ビバーチェI",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110660163/?bc=100533452011",
+      "title": "石光ビル",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000092377502/?bc=100445215005",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "ブリーズメゾン",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000085238857/?bc=100533265195",
+      "title": "セジュール天水",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000109038360/?bc=100460204976",
       "matches": 0,
       "levels": []
     },
     {
       "source": "SUUMO",
-      "title": "シャルム神田",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000098488514/?bc=100533554529",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "オリエントビルNo.77",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110358023/?bc=100530920057",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "ニューキャッスル曙",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110199418/?bc=100530120633",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "グランスイート",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000090682504/?bc=100531224044",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "メゾン・ド・ボヌール",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110521859/?bc=100532662223",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "センチュリー東カニヤ",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000110686432/?bc=100533480993",
-      "matches": 0,
-      "levels": []
-    },
-    {
-      "source": "SUUMO",
-      "title": "エクラージュ牛田旭",
-      "address": "広島市東区光町1-11-9",
-      "url": "https://suumo.jp/chintai/jnc_000101615989/?bc=100440491964",
+      "title": "月光矢賀ソレイユサイド参番館",
+      "address": "広島市東区光町2-6-12",
+      "url": "https://suumo.jp/chintai/jnc_000032016822/?bc=100533755762",
       "matches": 0,
       "levels": []
     }
   ],
-  "total_raw": 209,
-  "total_retrieved": 209,
+  "total_raw": 221,
+  "total_retrieved": 221,
   "candidates": 0,
   "current": 0,
   "new": [],
@@ -1629,36 +1693,36 @@
       "parsed": 20,
       "detail_attempted": 20,
       "detail_page_ok": 20,
-      "detail_validated": 15,
-      "under_rent_cap": 15,
+      "detail_validated": 17,
+      "under_rent_cap": 17,
       "detached": 0,
-      "apartment": 15,
-      "unknown": 5,
+      "apartment": 17,
+      "unknown": 3,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 14949,
+      "body_chars": 12876,
       "attempts": 1,
-      "seconds": 159.0
+      "seconds": 177.1
     },
     {
       "area": "中区",
       "source": "homes",
       "url": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
       "status": "OK",
-      "raw": 168,
-      "parsed": 69,
-      "detail_attempted": 69,
-      "detail_page_ok": 69,
+      "raw": 190,
+      "parsed": 81,
+      "detail_attempted": 81,
+      "detail_page_ok": 81,
       "detail_validated": 0,
       "under_rent_cap": 0,
       "detached": 0,
       "apartment": 0,
-      "unknown": 69,
+      "unknown": 81,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 21538,
+      "body_chars": 21672,
       "attempts": 1,
-      "seconds": 585.8
+      "seconds": 688.9
     },
     {
       "area": "中区",
@@ -1676,9 +1740,9 @@
       "unknown": 60,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 12001,
+      "body_chars": 11924,
       "attempts": 1,
-      "seconds": 967.8
+      "seconds": 585.4
     },
     {
       "area": "南区",
@@ -1696,9 +1760,9 @@
       "unknown": 4,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 15474,
+      "body_chars": 13415,
       "attempts": 1,
-      "seconds": 152.8
+      "seconds": 191.1
     },
     {
       "area": "南区",
@@ -1718,7 +1782,7 @@
       "error": "",
       "body_chars": 318,
       "attempts": 2,
-      "seconds": 4.1
+      "seconds": 4.0
     },
     {
       "area": "南区",
@@ -1736,9 +1800,9 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 534,
+      "body_chars": 536,
       "attempts": 2,
-      "seconds": 4.9
+      "seconds": 4.6
     },
     {
       "area": "西区",
@@ -1749,16 +1813,16 @@
       "parsed": 20,
       "detail_attempted": 20,
       "detail_page_ok": 20,
-      "detail_validated": 15,
-      "under_rent_cap": 15,
+      "detail_validated": 18,
+      "under_rent_cap": 18,
       "detached": 0,
-      "apartment": 15,
-      "unknown": 5,
+      "apartment": 18,
+      "unknown": 2,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 12985,
+      "body_chars": 12602,
       "attempts": 1,
-      "seconds": 161.5
+      "seconds": 157.7
     },
     {
       "area": "西区",
@@ -1778,7 +1842,7 @@
       "error": "",
       "body_chars": 318,
       "attempts": 2,
-      "seconds": 4.3
+      "seconds": 4.0
     },
     {
       "area": "西区",
@@ -1796,9 +1860,9 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 533,
+      "body_chars": 535,
       "attempts": 2,
-      "seconds": 4.7
+      "seconds": 4.5
     },
     {
       "area": "東区",
@@ -1809,16 +1873,16 @@
       "parsed": 20,
       "detail_attempted": 20,
       "detail_page_ok": 20,
-      "detail_validated": 15,
-      "under_rent_cap": 15,
+      "detail_validated": 18,
+      "under_rent_cap": 18,
       "detached": 0,
-      "apartment": 15,
-      "unknown": 5,
+      "apartment": 18,
+      "unknown": 2,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 13375,
+      "body_chars": 12361,
       "attempts": 1,
-      "seconds": 140.8
+      "seconds": 164.7
     },
     {
       "area": "東区",
@@ -1856,13 +1920,13 @@
       "unknown": 0,
       "detail_errors": 0,
       "error": "",
-      "body_chars": 535,
+      "body_chars": 537,
       "attempts": 2,
       "seconds": 4.6
     }
   ],
   "official_db": {
-    "updated_at": "2026-10-25T23:23:12+09:00",
+    "updated_at": "2026-10-27T01:53:17+09:00",
     "records": [
       {
         "type": "住宅宿泊事業",
@@ -13288,13 +13352,13 @@
         "status": "OK",
         "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/507/r809.pdf",
         "records": 456,
-        "seconds": 2.1
+        "seconds": 2.3
       }
     ]
   },
   "history": {
     "version": "8.11",
-    "updated_at": "2026-10-25T23:59:47+09:00",
+    "updated_at": "2026-10-27T02:26:30+09:00",
     "records": {
       "addr|広島県広島市中区大手町383|24000|ワンルーム|14.4|中区": {
         "source": "SUUMO",
