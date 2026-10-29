@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.11"
+VERSION = "8.12"
 
 
 def load_json(path, default):
@@ -464,15 +464,15 @@ def extract_type_evidence_from_text(text):
 def extract_detail_structured(page, area, source=""):
     """Source-specific detail extraction with safe body fallbacks."""
     """Extract only property-detail signals; generic search-page UI is ignored."""
-    result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":"","type_evidence":""}
+    result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":"","type_evidence":"","jsonld_kind":""}
 
     # First inspect source-specific detail containers. These are only hints;
     # the rendered detail body remains the fallback. We never use a search-card
     # ancestor as the authoritative property type.
     source_selectors = {
         "SUUMO": [".property_data", ".data_table", ".detail_info", ".detail", "dl", "table"],
-        "HOME'S": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
-        "at home": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
+        "HOME'S": ["main", "article", "dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
+        "at home": ["main", "article", "dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
     }
     chunks=[]
     for sel in source_selectors.get(source, []):
@@ -494,7 +494,13 @@ def extract_detail_structured(page, area, source=""):
     for obj in objs:
         typ=obj.get("@type") if isinstance(obj,dict) else ""
         if isinstance(typ,list): typ=" ".join(map(str,typ))
-        if not any(x in str(typ).lower() for x in ["product","residence","apartment","house","offer"]):
+        typ_low=str(typ).lower()
+        if any(x in typ_low for x in ["apartment","residence"]):
+            if "apartment" in typ_low or "residence" in typ_low:
+                result["jsonld_kind"]="集合住宅"
+        if any(x in typ_low for x in ["singlefamilyresidence","house"]):
+            result["jsonld_kind"]="戸建て系"
+        if not any(x in typ_low for x in ["product","residence","apartment","house","offer"]):
             continue
         name=jsonld_value(obj,"name")
         if name and not result["title"]: result["title"]=safe_title(str(name))
@@ -538,6 +544,13 @@ def extract_detail_structured(page, area, source=""):
     if not result["layout"]: result["layout"]=parse_layout(body)
 
     # Prefer exact labeled rows in the rendered body.
+    # Some portals expose the property kind in the page heading/title rather than
+    # a formal "物件種別" row.  Only inspect the top portion to avoid footer/menu
+    # false positives.
+    top_text="\n".join(body.splitlines()[:90])
+    top_type_hits=re.findall(r"(?:賃貸)?(一戸建て|一戸建|貸家|戸建て|戸建|テラスハウス|タウンハウス|長屋|賃貸マンション|賃貸アパート|マンション|アパート)", top_text)
+    if top_type_hits and not result["property_label"]:
+        result["property_label"]=top_type_hits[0]
     body_type_evidence=extract_type_evidence_from_text(body)
     if body_type_evidence:
         result["type_evidence"]=" | ".join(dict.fromkeys(
@@ -620,9 +633,11 @@ def enrich_from_detail(page, p):
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
             p["property_label"]=d.get("property_label") or p.get("property_label","")
             kind,reason=classify_kind_from_signals(
-                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""),
+                p.get("property_label","") or d.get("jsonld_kind",""), d.get("detail_text",body), d.get("structure",""),
                 p.get("title",""), d.get("type_evidence","")
             )
+            if kind == "不明" and d.get("jsonld_kind") in ("戸建て系","集合住宅"):
+                kind=d.get("jsonld_kind"); reason="jsonld_property_type"
             p["type_evidence"]=d.get("type_evidence","")[:1500]
             p["property_kind"]=kind
             p["classification_reason"]=reason
@@ -744,48 +759,45 @@ def main():
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
         context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP",viewport={"width":1365,"height":900})
-        # One reusable detail page prevents 8.8's repeated new-page/browser-resource
-        # behavior from turning most otherwise valid URLs into apparent failures.
         detail_page=context.new_page()
         for area,sources in AREAS.items():
-            for source,url in sources.items():
-                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
-                for attempt in range(1,3):
-                    page=context.new_page()
-                    try:
-                        rec["attempts"]=attempt
-                        if source=="suumo": items,raw=scrape_suumo(page,area,url)
-                        elif source=="homes": items,raw=scrape_homes(page,area,url)
-                        else: items,raw=scrape_athome(page,area,url)
-                        rec["raw"]=raw; rec["parsed"]=len(items)
-                        try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
-                        except Exception: pass
-                        rec["status"]="OK" if items else "RETRIEVAL_ZERO"
-                        if items: raw_items.extend(items); break
-                    except PlaywrightTimeoutError as e:
-                        rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
-                    except Exception as e:
-                        rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
-                    finally:
-                        try: page.close()
-                        except Exception: pass
-
-                # Detail validation is performed only for URLs actually retrieved from this source.
-                source_items=[p for p in raw_items if p.get("area")==area and p.get("source")==({"suumo":"SUUMO","homes":"HOME'S","athome":"at home"}.get(source,source))]
-                # Deduplicate by URL before opening details.
-                local={p.get("url"):p for p in source_items if p.get("url")}
-                rec["detail_attempted"]=len(local)
-                for p in local.values():
-                    enrich_from_detail(detail_page,p)
-                rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
-                rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
-                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
-                rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
-                rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
-                rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
-                rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
-                rec["seconds"]=round(time.time()-started,1)
-                diagnostics.append(rec)
+            for source,urls in sources.items():
+                if isinstance(urls,str): urls=[urls]
+                for variant_no,url in enumerate(urls,1):
+                    started=time.time(); rec={"area":area,"source":source,"variant":variant_no,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
+                    local_items=[]
+                    for attempt in range(1,3):
+                        page=context.new_page()
+                        try:
+                            rec["attempts"]=attempt
+                            if source=="suumo": items,raw=scrape_suumo(page,area,url)
+                            elif source=="homes": items,raw=scrape_homes(page,area,url)
+                            else: items,raw=scrape_athome(page,area,url)
+                            rec["raw"]=raw; rec["parsed"]=len(items); local_items=items
+                            try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
+                            except Exception: pass
+                            rec["status"]="OK" if items else "RETRIEVAL_ZERO"
+                            if items:
+                                raw_items.extend(items); break
+                        except PlaywrightTimeoutError as e:
+                            rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                        except Exception as e:
+                            rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                        finally:
+                            try: page.close()
+                            except Exception: pass
+                    local={p.get("url"):p for p in local_items if p.get("url")}
+                    rec["detail_attempted"]=len(local)
+                    for p in local.values(): enrich_from_detail(detail_page,p)
+                    rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
+                    rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
+                    rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+                    rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
+                    rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
+                    rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
+                    rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
+                    rec["seconds"]=round(time.time()-started,1)
+                    diagnostics.append(rec)
         try: detail_page.close()
         except Exception: pass
         browser.close()
