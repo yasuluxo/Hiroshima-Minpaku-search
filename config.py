@@ -1,47 +1,23 @@
 AREAS = {
     "中区": {
-        "suumo": [
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinaka/?sort=1&cb=0.0&ct=10.0",
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinaka/nj_102/?sort=1&cb=0.0&ct=10.0",
-        ],
-        "homes": [
-            "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
-            "https://www.homes.co.jp/chintai/theme/11157/hiroshima/hiroshima_naka-city/list/",
-        ],
-        "athome": ["https://www.athome.co.jp/chintai/hiroshima/hiroshima_naka-city/"],
+        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinaka/?sort=1&cb=0.0&ct=10.0",
+        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_naka-city/list/",
+        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_naka-city/",
     },
     "南区": {
-        "suumo": [
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashiminami/?sort=1&cb=0.0&ct=10.0",
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashiminami/nj_102/?sort=1&cb=0.0&ct=10.0",
-        ],
-        "homes": [
-            "https://www.homes.co.jp/chintai/hiroshima/hiroshima_minami-city/list/",
-            "https://www.homes.co.jp/chintai/theme/11157/hiroshima/hiroshima_minami-city/list/",
-        ],
-        "athome": ["https://www.athome.co.jp/chintai/hiroshima/hiroshima_minami-city/"],
+        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashiminami/?sort=1&cb=0.0&ct=10.0",
+        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_minami-city/list/",
+        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_minami-city/",
     },
     "西区": {
-        "suumo": [
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinishi/?sort=1&cb=0.0&ct=10.0",
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinishi/nj_102/?sort=1&cb=0.0&ct=10.0",
-        ],
-        "homes": [
-            "https://www.homes.co.jp/chintai/hiroshima/hiroshima_nishi-city/list/",
-            "https://www.homes.co.jp/chintai/theme/11157/hiroshima/hiroshima_nishi-city/list/",
-        ],
-        "athome": ["https://www.athome.co.jp/chintai/hiroshima/hiroshima_nishi-city/"],
+        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashinishi/?sort=1&cb=0.0&ct=10.0",
+        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_nishi-city/list/",
+        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_nishi-city/",
     },
     "東区": {
-        "suumo": [
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashihigashi/?sort=1&cb=0.0&ct=10.0",
-            "https://suumo.jp/chintai/hiroshima/sc_hiroshimashihigashi/nj_102/?sort=1&cb=0.0&ct=10.0",
-        ],
-        "homes": [
-            "https://www.homes.co.jp/chintai/hiroshima/hiroshima_higashi-city/list/",
-            "https://www.homes.co.jp/chintai/theme/11157/hiroshima/hiroshima_higashi-city/list/",
-        ],
-        "athome": ["https://www.athome.co.jp/chintai/hiroshima/hiroshima_higashi-city/"],
+        "suumo": "https://suumo.jp/chintai/hiroshima/sc_hiroshimashihigashi/?sort=1&cb=0.0&ct=10.0",
+        "homes": "https://www.homes.co.jp/chintai/hiroshima/hiroshima_higashi-city/list/",
+        "athome": "https://www.athome.co.jp/chintai/hiroshima/hiroshima_higashi-city/",
     },
 }
 MAX_RENT = 100000
