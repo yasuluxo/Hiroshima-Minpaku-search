@@ -1,5 +1,4 @@
-
-name: Daily Property Search 8.14
+name: Daily Property Search 8.15
 
 on:
   workflow_dispatch:
@@ -25,10 +24,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install Playwright Chromium
-        run: |
-          # Pin the runner to Ubuntu 24.04. GitHub's ubuntu-latest can move to
-          # a newer Ubuntu release before the installed Playwright version supports it.
-          python -m playwright install --with-deps chromium
+        run: python -m playwright install --with-deps chromium
 
       - name: Run property search
         run: python search.py
