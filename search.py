@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.12"
+VERSION = "8.13"
 
 
 def load_json(path, default):
@@ -66,26 +66,36 @@ def has_full_address(s):
 
 
 def extract_address(text, area):
-    t = clean_text(text)
-    patterns = [
-        r"(広島県?広島市(?:中|東|南|西)区[^\s,、|]+)",
-        r"(広島市(?:中|東|南|西)区[^\s,、|]+)",
-    ]
-    candidates = []
-    for pat in patterns:
-        for m in re.finditer(pat, t):
-            value = m.group(1).strip(" -")
-            if area in value and has_full_address(value):
-                candidates.append(value)
-    if candidates:
-        # Prefer the shortest complete address: generic body text often repeats it.
-        return min(candidates, key=len)
-    if area:
-        m = re.search(rf"({re.escape(area)}[^\s,、|]+)", t)
-        if m and has_full_address(m.group(1)):
-            return m.group(1).strip(" -")
-    return ""
+    """Extract only the detail page's own labeled address.
 
+    Never scan arbitrary page-wide text for a full address: portals append
+    recommended/related properties whose addresses belong to other listings.
+    """
+    raw = html_lib.unescape(text or "")
+    raw = re.sub(r"<[^>]+>", " ", raw).replace("\r", "")
+    lines = [re.sub(r"\s+", " ", x).strip() for x in raw.split("\n")]
+    lines = [x for x in lines if x]
+
+    for i, line in enumerate(lines):
+        m = re.search(r"(?:所在地|住所)\s*[|｜:：]\s*(広島県?広島市(?:中|東|南|西)区.+)$", line)
+        if not m:
+            m = re.search(r"(?:所在地|住所)\s+(広島県?広島市(?:中|東|南|西)区.+)$", line)
+        if m:
+            value = clean_text(m.group(1)).strip(" -|｜")
+            if area in value:
+                return value
+        if re.fullmatch(r"(?:所在地|住所)", line):
+            for nxt in lines[i+1:i+3]:
+                m2 = re.match(r"(広島県?広島市(?:中|東|南|西)区.+)$", nxt)
+                if m2 and area in m2.group(1):
+                    return clean_text(m2.group(1)).strip(" -|｜")
+
+    # Some selectors flatten the row into a single string without a delimiter.
+    flat = clean_text(raw)
+    m = re.search(r"(?:所在地|住所)\s*(広島県?広島市(?:中|東|南|西)区[^\s,、|]+)", flat)
+    if m and area in m.group(1):
+        return m.group(1).strip(" -|｜")
+    return ""
 
 def make_canonical_id(p):
     address = norm(p.get("address"))
@@ -447,7 +457,7 @@ def extract_type_evidence_from_text(text):
     vals=[]
     labels=r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)"
     types=r"(?:賃貸)?(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション)"
-    for line in clean_text(text).splitlines():
+    for line in (text or "").splitlines():
         line=clean_text(line)
         if not line or len(line)>220:
             continue
@@ -461,127 +471,188 @@ def extract_type_evidence_from_text(text):
     return " | ".join(dict.fromkeys(vals))[:1500]
 
 
-def extract_detail_structured(page, area, source=""):
-    """Source-specific detail extraction with safe body fallbacks."""
-    """Extract only property-detail signals; generic search-page UI is ignored."""
-    result={"title":"","address":"","rent":None,"size":None,"layout":"","property_label":"","structure":"","detail_text":"","type_evidence":"","jsonld_kind":""}
+def extract_labeled_value(text, labels, area=""):
+    """Extract a value only when it is attached to an explicit field label.
 
-    # First inspect source-specific detail containers. These are only hints;
-    # the rendered detail body remains the fallback. We never use a search-card
-    # ancestor as the authoritative property type.
+    8.13 deliberately avoids scanning the whole page for addresses. SUUMO detail
+    pages contain many unrelated addresses later in the page (broker offices,
+    other listings, etc.). The listing's own 所在地/住所 field is authoritative.
+    """
+    label_re = r"(?:" + "|".join(re.escape(x) for x in labels) + r")"
+    raw = html_lib.unescape(text or "").replace("\r", "")
+    lines = [re.sub(r"[ \t]+", " ", x).strip(" |｜\u3000") for x in raw.split("\n")]
+    lines = [x for x in lines if x]
+    candidates = []
+    stop_labels = r"^(?:駅徒歩|間取り|専有面積|築年数|階|向き|建物種別|構造|賃料|管理費|敷金|礼金)"
+    for i, line in enumerate(lines):
+        if not re.search(label_re, line):
+            continue
+        m = re.search(label_re + r"\s*(?:[|｜:：]\s*)?(.+)$", line)
+        value = m.group(1).strip() if m else ""
+        if value and value != line:
+            candidates.append(value)
+        elif i + 1 < len(lines):
+            nxt = lines[i + 1].strip()
+            if nxt and not re.search(stop_labels, nxt):
+                candidates.append(nxt)
+    if not candidates:
+        # Conservative same-line fallback for table text without newlines.
+        for m in re.finditer(label_re + r"\s*(?:[|｜:：]\s*)?([^|｜\n]{2,100})", raw):
+            v = m.group(1).strip()
+            if v and not re.search(stop_labels, v):
+                candidates.append(v)
+    cleaned = []
+    for value in candidates:
+        value = clean_text(value).strip(" -|｜")
+        if not value or len(value) > 160:
+            continue
+        if area and "広島市" in value and area not in value:
+            continue
+        if not re.search(r"(?:広島(?:県|市)|市)", value):
+            continue
+        if value not in cleaned:
+            cleaned.append(value)
+    return cleaned[0] if cleaned else ""
+
+
+def extract_detail_structured(page, area, source=""):
+    """Extract property-specific detail signals without borrowing sibling data."""
+    result = {"title":"", "address":"", "rent":None, "size":None,
+              "layout":"", "property_label":"", "structure":"",
+              "detail_text":"", "type_evidence":""}
+
     source_selectors = {
         "SUUMO": [".property_data", ".data_table", ".detail_info", ".detail", "dl", "table"],
-        "HOME'S": ["main", "article", "dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
-        "at home": ["main", "article", "dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
+        "HOME'S": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
+        "at home": ["dl", "table", "[class*=detail]", "[class*=property]", "[class*=spec]", "[class*=info]"],
     }
-    chunks=[]
+    chunks = []
     for sel in source_selectors.get(source, []):
         try:
-            loc=page.locator(sel)
+            loc = page.locator(sel)
             for i in range(min(loc.count(), 30)):
-                t=clean_text(loc.nth(i).inner_text(timeout=1200))
-                if t and len(t)<=6000: chunks.append(t)
+                raw = loc.nth(i).inner_text(timeout=1200)
+                if raw and len(clean_text(raw)) <= 6000:
+                    chunks.append(raw)
         except Exception:
             pass
+
     if chunks:
-        joined=" ".join(chunks)
-        result["type_evidence"]=extract_type_evidence_from_text(joined)
-        m=re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)", joined)
-        if m: result["property_label"]=m.group(1)
-        a=extract_address(joined,area)
-        if a: result["address"]=a
-    objs=jsonld_objects(page)
+        joined = "\n".join(chunks)
+        result["type_evidence"] = extract_type_evidence_from_text(joined)
+        m = re.search(
+            r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*"
+            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+            joined,
+        )
+        if m:
+            result["property_label"] = m.group(1)
+        a = extract_labeled_value(joined, ["所在地", "住所"], area)
+        if a:
+            result["address"] = a
+            result["address_source"] = "labeled_detail"
+
+    # JSON-LD can provide the listing's own address and price, but never let it
+    # overwrite an explicit rendered 所在地 field.
+    objs = jsonld_objects(page)
     for obj in objs:
-        typ=obj.get("@type") if isinstance(obj,dict) else ""
-        if isinstance(typ,list): typ=" ".join(map(str,typ))
-        typ_low=str(typ).lower()
-        if any(x in typ_low for x in ["apartment","residence"]):
-            if "apartment" in typ_low or "residence" in typ_low:
-                result["jsonld_kind"]="集合住宅"
-        if any(x in typ_low for x in ["singlefamilyresidence","house"]):
-            result["jsonld_kind"]="戸建て系"
-        if not any(x in typ_low for x in ["product","residence","apartment","house","offer"]):
+        typ = obj.get("@type") if isinstance(obj, dict) else ""
+        if isinstance(typ, list):
+            typ = " ".join(map(str, typ))
+        if not any(x in str(typ).lower() for x in ["product", "residence", "apartment", "house", "offer"]):
             continue
-        name=jsonld_value(obj,"name")
-        if name and not result["title"]: result["title"]=safe_title(str(name))
-        addr=obj.get("address") if isinstance(obj,dict) else None
-        if isinstance(addr,dict):
-            parts=[addr.get("addressRegion"),addr.get("addressLocality"),addr.get("streetAddress")]
-            a="".join(str(x) for x in parts if x)
-            if area in a and has_full_address(a): result["address"]=a
-        offers=obj.get("offers") if isinstance(obj,dict) else None
-        if isinstance(offers,dict):
-            price=offers.get("price")
+        name = jsonld_value(obj, "name")
+        if name and not result["title"]:
+            result["title"] = safe_title(str(name))
+        addr = obj.get("address") if isinstance(obj, dict) else None
+        if isinstance(addr, dict):
+            parts = [addr.get("addressRegion"), addr.get("addressLocality"), addr.get("streetAddress")]
+            a = "".join(str(x) for x in parts if x)
+            if area in a and not result["address"]:
+                result["address"] = a
+                result["address_source"] = "jsonld"
+        offers = obj.get("offers") if isinstance(obj, dict) else None
+        if isinstance(offers, dict):
+            price = offers.get("price")
             if price:
-                try: result["rent"]=int(float(str(price).replace(",","")))
-                except Exception: pass
-        floor=obj.get("floorSize") if isinstance(obj,dict) else None
-        if isinstance(floor,dict):
-            v=floor.get("value")
+                try:
+                    result["rent"] = int(float(str(price).replace(",", "")))
+                except Exception:
+                    pass
+        floor = obj.get("floorSize") if isinstance(obj, dict) else None
+        if isinstance(floor, dict):
+            v = floor.get("value")
             if v:
-                try: result["size"]=float(v)
-                except Exception: pass
-    # Meta tags are less authoritative than JSON-LD, but much safer than whole-body title guessing.
-    for selector, key in [('meta[property="og:title"]',"title"),('meta[name="description"]',"detail_text")]:
+                try:
+                    result["size"] = float(v)
+                except Exception:
+                    pass
+
+    for selector, key in [('meta[property="og:title"]', "title"), ('meta[name="description"]', "detail_text")]:
         try:
-            el=page.locator(selector).first
+            el = page.locator(selector).first
             if el.count():
-                val=clean_text(el.get_attribute("content") or "")
-                if key=="title" and val and not result["title"]: result["title"]=safe_title(val)
-                if key=="detail_text" and val: result[key]=val
-        except Exception: pass
+                val = clean_text(el.get_attribute("content") or "")
+                if key == "title" and val and not result["title"]:
+                    result["title"] = safe_title(val)
+                if key == "detail_text" and val:
+                    result[key] = val
+        except Exception:
+            pass
 
     try:
-        body=clean_text(page.locator("body").inner_text(timeout=5000))
+        body_raw = page.locator("body").inner_text(timeout=5000)
     except Exception:
-        body=""
-    result["detail_text"]=(result.get("detail_text")+" "+body[:12000]).strip()
+        body_raw = ""
+    body = clean_text(body_raw)
+    result["detail_text"] = (result.get("detail_text", "") + " " + body[:12000]).strip()
 
+    # Never page-wide scan for addresses: that is the exact bug fixed in 8.13.
     if not result["address"]:
-        result["address"]=extract_address(body,area)
-    if result["rent"] is None: result["rent"]=parse_rent(body)
-    if result["size"] is None: result["size"]=parse_area(body)
-    if not result["layout"]: result["layout"]=parse_layout(body)
+        result["address"] = extract_labeled_value(body_raw, ["所在地", "住所"], area)
+        if result["address"]:
+            result["address_source"] = "labeled_body"
+    if result["rent"] is None:
+        result["rent"] = parse_rent(body)
+    if result["size"] is None:
+        result["size"] = parse_area(body)
+    if not result["layout"]:
+        result["layout"] = parse_layout(body)
 
-    # Prefer exact labeled rows in the rendered body.
-    # Some portals expose the property kind in the page heading/title rather than
-    # a formal "物件種別" row.  Only inspect the top portion to avoid footer/menu
-    # false positives.
-    top_text="\n".join(body.splitlines()[:90])
-    top_type_hits=re.findall(r"(?:賃貸)?(一戸建て|一戸建|貸家|戸建て|戸建|テラスハウス|タウンハウス|長屋|賃貸マンション|賃貸アパート|マンション|アパート)", top_text)
-    if top_type_hits and not result["property_label"]:
-        result["property_label"]=top_type_hits[0]
-    body_type_evidence=extract_type_evidence_from_text(body)
+    body_type_evidence = extract_type_evidence_from_text(body_raw)
     if body_type_evidence:
-        result["type_evidence"]=" | ".join(dict.fromkeys(
-            [x for x in [result.get("type_evidence",""), body_type_evidence] if x]
+        result["type_evidence"] = " | ".join(dict.fromkeys(
+            [x for x in [result.get("type_evidence", ""), body_type_evidence] if x]
         ))[:1500]
-        m=re.search(r"(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)", body_type_evidence)
+        m = re.search(
+            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+            body_type_evidence,
+        )
         if m:
-            result["property_label"]=m.group(0)
+            result["property_label"] = m.group(0)
 
     if not result["property_label"]:
-        # Common site-specific phrases with an explicit label/value relationship.
-        for line in body.splitlines():
-            line=clean_text(line)
-            if len(line)>220 or not line:
+        for line in body_raw.splitlines():
+            line = clean_text(line)
+            if not line or len(line) > 220:
                 continue
-            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)",line):
-                m=re.search(r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",line)
+            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)", line):
+                m = re.search(
+                    r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+                    line,
+                )
                 if m:
-                    result["property_label"]=m.group(1)
+                    result["property_label"] = m.group(1)
                     break
 
-    # Structure evidence is also limited to lines explicitly describing structure.
-    structure_lines=[]
-    for line in body.splitlines():
-        line=clean_text(line)
-        if re.search(r"(?:構造|建物構造|建築|建物種別|建物タイプ)",line) and len(line)<=220:
+    structure_lines = []
+    for line in body_raw.splitlines():
+        line = clean_text(line)
+        if re.search(r"(?:構造|建物構造|建築|建物種別|建物タイプ)", line) and len(line) <= 220:
             structure_lines.append(line)
     if structure_lines:
-        result["structure"]=" | ".join(dict.fromkeys(structure_lines))[:1800]
+        result["structure"] = " | ".join(dict.fromkeys(structure_lines))[:1800]
     return result
-
 
 def extract_detail_title(page):
     for selector in ["h1", "meta[property='og:title']", "title"]:
@@ -626,22 +697,22 @@ def enrich_from_detail(page, p):
             d=extract_detail_structured(page,p.get("area",""),p.get("source",""))
             title=extract_detail_title(page) or d.get("title","")
             if title and len(title)<120: p["title"]=title
-            if d.get("address") and has_full_address(d["address"]): p["address"]=d["address"]
+            if d.get("address"):
+                p["address"]=d["address"]
+                p["address_source"]=d.get("address_source","")
             if d.get("layout"): p["layout"]=d["layout"]
             if d.get("size") is not None: p["size"]=d["size"]
             if d.get("rent") is not None: p["rent"]=d["rent"]
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
             p["property_label"]=d.get("property_label") or p.get("property_label","")
             kind,reason=classify_kind_from_signals(
-                p.get("property_label","") or d.get("jsonld_kind",""), d.get("detail_text",body), d.get("structure",""),
+                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""),
                 p.get("title",""), d.get("type_evidence","")
             )
-            if kind == "不明" and d.get("jsonld_kind") in ("戸建て系","集合住宅"):
-                kind=d.get("jsonld_kind"); reason="jsonld_property_type"
             p["type_evidence"]=d.get("type_evidence","")[:1500]
             p["property_kind"]=kind
             p["classification_reason"]=reason
-            p["detail_validated"]=kind in ("戸建て系","集合住宅") and has_full_address(p.get("address",""))
+            p["detail_validated"]=kind in ("戸建て系","集合住宅") and bool(p.get("address",""))
             p["detail_source"]=p.get("url")
             if p["detail_validated"]:
                 p["detail_attempts"]=attempt
@@ -683,7 +754,7 @@ def filter_candidates(items, official_db):
         if not p.get("detail_validated"): continue
         kind=p.get("property_kind")
         if kind not in ("戸建て系","集合住宅"): continue
-        p["address_quality"]="OK" if has_full_address(p.get("address",'')) else "LOW"
+        p["address_quality"]="OK" if has_full_address(p.get("address",'')) else ("PARTIAL" if p.get("address") else "MISSING")
         matches=[]
         if kind=="集合住宅":
             # Apartments/condos are never allowed through without a current official match.
@@ -759,45 +830,48 @@ def main():
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
         context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP",viewport={"width":1365,"height":900})
+        # One reusable detail page prevents 8.8's repeated new-page/browser-resource
+        # behavior from turning most otherwise valid URLs into apparent failures.
         detail_page=context.new_page()
         for area,sources in AREAS.items():
-            for source,urls in sources.items():
-                if isinstance(urls,str): urls=[urls]
-                for variant_no,url in enumerate(urls,1):
-                    started=time.time(); rec={"area":area,"source":source,"variant":variant_no,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
-                    local_items=[]
-                    for attempt in range(1,3):
-                        page=context.new_page()
-                        try:
-                            rec["attempts"]=attempt
-                            if source=="suumo": items,raw=scrape_suumo(page,area,url)
-                            elif source=="homes": items,raw=scrape_homes(page,area,url)
-                            else: items,raw=scrape_athome(page,area,url)
-                            rec["raw"]=raw; rec["parsed"]=len(items); local_items=items
-                            try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
-                            except Exception: pass
-                            rec["status"]="OK" if items else "RETRIEVAL_ZERO"
-                            if items:
-                                raw_items.extend(items); break
-                        except PlaywrightTimeoutError as e:
-                            rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
-                        except Exception as e:
-                            rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
-                        finally:
-                            try: page.close()
-                            except Exception: pass
-                    local={p.get("url"):p for p in local_items if p.get("url")}
-                    rec["detail_attempted"]=len(local)
-                    for p in local.values(): enrich_from_detail(detail_page,p)
-                    rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
-                    rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
-                    rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
-                    rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
-                    rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
-                    rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
-                    rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
-                    rec["seconds"]=round(time.time()-started,1)
-                    diagnostics.append(rec)
+            for source,url in sources.items():
+                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
+                for attempt in range(1,3):
+                    page=context.new_page()
+                    try:
+                        rec["attempts"]=attempt
+                        if source=="suumo": items,raw=scrape_suumo(page,area,url)
+                        elif source=="homes": items,raw=scrape_homes(page,area,url)
+                        else: items,raw=scrape_athome(page,area,url)
+                        rec["raw"]=raw; rec["parsed"]=len(items)
+                        try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
+                        except Exception: pass
+                        rec["status"]="OK" if items else "RETRIEVAL_ZERO"
+                        if items: raw_items.extend(items); break
+                    except PlaywrightTimeoutError as e:
+                        rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                    except Exception as e:
+                        rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                    finally:
+                        try: page.close()
+                        except Exception: pass
+
+                # Detail validation is performed only for URLs actually retrieved from this source.
+                source_items=[p for p in raw_items if p.get("area")==area and p.get("source")==({"suumo":"SUUMO","homes":"HOME'S","athome":"at home"}.get(source,source))]
+                # Deduplicate by URL before opening details.
+                local={p.get("url"):p for p in source_items if p.get("url")}
+                rec["detail_attempted"]=len(local)
+                for p in local.values():
+                    enrich_from_detail(detail_page,p)
+                rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
+                rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
+                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+                rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
+                rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
+                rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
+                rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
+                rec["seconds"]=round(time.time()-started,1)
+                diagnostics.append(rec)
         try: detail_page.close()
         except Exception: pass
         browser.close()
