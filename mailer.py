@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.12"
+VERSION = "8.13"
 
 
 def yen(v):
@@ -14,6 +14,7 @@ def add_property(lines, p, n):
     if p.get('title'): lines.append(f"   {p['title']}")
     lines.append(f"   種別：{p.get('property_kind','')} / 間取り：{p.get('layout') or '不明'} / 面積：{p.get('size') or '不明'}㎡")
     if p.get('address'): lines.append(f"   住所：{p['address']}")
+    if p.get('address_source'): lines.append(f"   住所取得：{p['address_source']}")
     if p.get('classification_reason'): lines.append(f"   種別判定：{p['classification_reason']}")
     if p.get('comment'): lines.append(f"   注目点：{p['comment']}")
     if p.get('official_matches'):
@@ -53,7 +54,6 @@ def send_report(data):
         f"旧版履歴の未再検証：{legacy}件（履歴は削除していません）",
         "",
         "【検索・除外の段階別件数】",
-        "※8.12では、戸建て専用検索（SUUMO）と家賃10万円以下検索（HOME'S）を追加し、一般検索だけで戸建てが拾えない状態を補正しています。",
         f"・検索サイトから取得した物件URL：{stage.get('raw_items',0)}件",
         f"・重複除去後の詳細URL：{stage.get('unique_detail_urls',0)}件",
         f"・詳細ページ読み込み成功：{stage.get('detail_page_ok',0)}件",
@@ -71,7 +71,7 @@ def send_report(data):
         "・集合住宅：広島市公式の「民泊届出」または「旅館業許可」一覧と、住所または建物名が明確に一致するものだけ採用",
         "・集合住宅は公式照合できなければ候補から除外",
         "・物件詳細ページで種別を再確認し、検索画面の共通UI文言だけでは戸建て系にしない",
-        "・物件詳細ページで住所を再取得し、別物件の住所を混ぜない",
+        "・物件詳細ページの「所在地/住所」を優先し、推薦物件など別物件の住所を混ぜない",
         "・町名だけの公式照合は不採用",
         "・建物名の部分一致は不採用",
         "・部屋番号一致だけでは不採用。建物/住所の整合を確認",
@@ -98,7 +98,7 @@ def send_report(data):
     lines += [
         "",
         "="*56,
-        "※第8.12弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
+        "※第8.13弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
         "※集合住宅は、現在取得した広島市公式一覧との明確な一致が必要です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
