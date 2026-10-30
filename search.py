@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.14"
+VERSION = "8.15"
 
 
 def load_json(path, default):
@@ -98,17 +98,19 @@ def extract_address(text, area):
     return ""
 
 def make_canonical_id(p):
+    # A detail URL identifies one listing much more reliably than a partial
+    # address. SUUMO often displays only a district-level address, and portal
+    # pages can contain broker/recommended-property addresses elsewhere.
+    url = p.get("url", "")
+    if url:
+        return f"url|{norm(url)}"
     address = norm(p.get("address"))
     title = norm(p.get("title"))
     rent = p.get("rent") or 0
     layout = norm(p.get("layout"))
     size = round(float(p.get("size") or 0), 1)
     area = p.get("area", "")
-    url = p.get("url", "")
-    # URL is a last-resort identity. Address+rent+layout+size remains the primary key.
-    if address:
-        return f"addr|{address}|{rent}|{layout}|{size}|{area}"
-    return f"url|{norm(url)}|{title}|{rent}|{layout}|{size}|{area}"
+    return f"fallback|{address}|{title}|{rent}|{layout}|{size}|{area}"
 
 
 def classify_kind_from_signals(label="", text="", structure="", title="", type_evidence=""):
@@ -827,51 +829,57 @@ def detect_changes(candidates):
 
 def main():
     diagnostics=[]; raw_items=[]; official_db=build_official_db()
+    source_names={"suumo":"SUUMO","homes":"HOME'S","athome":"at home"}
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)
         context=browser.new_context(user_agent=USER_AGENT,locale="ja-JP",viewport={"width":1365,"height":900})
-        # One reusable detail page prevents 8.8's repeated new-page/browser-resource
-        # behavior from turning most otherwise valid URLs into apparent failures.
         detail_page=context.new_page()
         for area,sources in AREAS.items():
-            for source,url in sources.items():
-                started=time.time(); rec={"area":area,"source":source,"url":url,"status":"unknown","raw":0,"parsed":0,"detail_attempted":0,"detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,"detached":0,"apartment":0,"unknown":0,"detail_errors":0,"error":"","body_chars":0,"attempts":0}
-                for attempt in range(1,3):
-                    page=context.new_page()
-                    try:
-                        rec["attempts"]=attempt
-                        if source=="suumo": items,raw=scrape_suumo(page,area,url)
-                        elif source=="homes": items,raw=scrape_homes(page,area,url)
-                        else: items,raw=scrape_athome(page,area,url)
-                        rec["raw"]=raw; rec["parsed"]=len(items)
-                        try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
-                        except Exception: pass
-                        rec["status"]="OK" if items else "RETRIEVAL_ZERO"
-                        if items: raw_items.extend(items); break
-                    except PlaywrightTimeoutError as e:
-                        rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
-                    except Exception as e:
-                        rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
-                    finally:
-                        try: page.close()
-                        except Exception: pass
+            for source, configured in sources.items():
+                urls=configured if isinstance(configured,list) else [configured]
+                for url in urls:
+                    started=time.time()
+                    rec={"area":area,"source":source_names.get(source,source),"url":url,
+                         "status":"unknown","raw":0,"parsed":0,"detail_attempted":0,
+                         "detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,
+                         "detached":0,"apartment":0,"unknown":0,"detail_errors":0,
+                         "error":"","body_chars":0,"attempts":0}
+                    local_items=[]
+                    for attempt in range(1,3):
+                        page=context.new_page()
+                        try:
+                            rec["attempts"]=attempt
+                            if source=="suumo": local_items,raw=scrape_suumo(page,area,url)
+                            elif source=="homes": local_items,raw=scrape_homes(page,area,url)
+                            else: local_items,raw=scrape_athome(page,area,url)
+                            rec["raw"]=raw; rec["parsed"]=len(local_items)
+                            try: rec["body_chars"]=len(page.locator("body").inner_text(timeout=5000))
+                            except Exception: pass
+                            rec["status"]="OK" if local_items else "RETRIEVAL_ZERO"
+                            if local_items: break
+                        except PlaywrightTimeoutError as e:
+                            rec["status"]="TIMEOUT"; rec["error"]=str(e)[:400]
+                        except Exception as e:
+                            rec["status"]="ERROR"; rec["error"]=repr(e)[:500]
+                        finally:
+                            try: page.close()
+                            except Exception: pass
 
-                # Detail validation is performed only for URLs actually retrieved from this source.
-                source_items=[p for p in raw_items if p.get("area")==area and p.get("source")==({"suumo":"SUUMO","homes":"HOME'S","athome":"at home"}.get(source,source))]
-                # Deduplicate by URL before opening details.
-                local={p.get("url"):p for p in source_items if p.get("url")}
-                rec["detail_attempted"]=len(local)
-                for p in local.values():
-                    enrich_from_detail(detail_page,p)
-                rec["detail_page_ok"]=sum(1 for p in local.values() if p.get("detail_page_ok"))
-                rec["detail_validated"]=sum(1 for p in local.values() if p.get("detail_validated"))
-                rec["under_rent_cap"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
-                rec["detached"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
-                rec["apartment"]=sum(1 for p in local.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
-                rec["unknown"]=sum(1 for p in local.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
-                rec["detail_errors"]=sum(1 for p in local.values() if not p.get("detail_page_ok"))
-                rec["seconds"]=round(time.time()-started,1)
-                diagnostics.append(rec)
+                    # Validate only URLs obtained from this exact search URL.
+                    local_by_url={p.get("url"):p for p in local_items if p.get("url")}
+                    rec["detail_attempted"]=len(local_by_url)
+                    for p in local_by_url.values():
+                        enrich_from_detail(detail_page,p)
+                        raw_items.append(p)
+                    rec["detail_page_ok"]=sum(1 for p in local_by_url.values() if p.get("detail_page_ok"))
+                    rec["detail_validated"]=sum(1 for p in local_by_url.values() if p.get("detail_validated"))
+                    rec["under_rent_cap"]=sum(1 for p in local_by_url.values() if p.get("detail_validated") and p.get("rent") is not None and p.get("rent")<=MAX_RENT)
+                    rec["detached"]=sum(1 for p in local_by_url.values() if p.get("detail_validated") and p.get("property_kind")=="戸建て系")
+                    rec["apartment"]=sum(1 for p in local_by_url.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
+                    rec["unknown"]=sum(1 for p in local_by_url.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
+                    rec["detail_errors"]=sum(1 for p in local_by_url.values() if not p.get("detail_page_ok"))
+                    rec["seconds"]=round(time.time()-started,1)
+                    diagnostics.append(rec)
         try: detail_page.close()
         except Exception: pass
         browser.close()
@@ -911,14 +919,7 @@ def main():
     unresolved_samples=[]
     for p in stage_items:
         if p.get("detail_page_ok") and not p.get("detail_validated"):
-            unresolved_samples.append({
-                "source":p.get("source"),"area":p.get("area"),"title":p.get("title"),
-                "address":p.get("address"),"url":p.get("url"),
-                "property_label":p.get("property_label"),
-                "type_evidence":p.get("type_evidence"),
-                "structure":p.get("structure"),
-                "classification_reason":p.get("classification_reason")
-            })
+            unresolved_samples.append({"source":p.get("source"),"area":p.get("area"),"title":p.get("title"),"address":p.get("address"),"url":p.get("url"),"property_label":p.get("property_label"),"type_evidence":p.get("type_evidence"),"structure":p.get("structure"),"classification_reason":p.get("classification_reason")})
             if len(unresolved_samples)>=100: break
     report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
