@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-29T03:49:49+09:00",
+  "updated_at": "2026-10-30T04:51:05+09:00",
   "records": [
     {
       "type": "住宅宿泊事業",
@@ -11418,14 +11418,14 @@
       "status": "OK",
       "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/508/080893.pdf",
       "records": 275,
-      "seconds": 1.9
+      "seconds": 2.6
     },
     {
       "kind": "ryokan",
       "status": "OK",
       "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/507/r809.pdf",
       "records": 456,
-      "seconds": 2.3
+      "seconds": 2.7
     }
   ]
 }
