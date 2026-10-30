@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.13"
+VERSION = "8.14"
 
 
 def load_json(path, default):
@@ -474,7 +474,7 @@ def extract_type_evidence_from_text(text):
 def extract_labeled_value(text, labels, area=""):
     """Extract a value only when it is attached to an explicit field label.
 
-    8.13 deliberately avoids scanning the whole page for addresses. SUUMO detail
+    8.14 deliberately avoids scanning the whole page for addresses. SUUMO detail
     pages contain many unrelated addresses later in the page (broker offices,
     other listings, etc.). The listing's own 所在地/住所 field is authoritative.
     """
@@ -607,7 +607,7 @@ def extract_detail_structured(page, area, source=""):
     body = clean_text(body_raw)
     result["detail_text"] = (result.get("detail_text", "") + " " + body[:12000]).strip()
 
-    # Never page-wide scan for addresses: that is the exact bug fixed in 8.13.
+    # Never page-wide scan for addresses: that is the exact bug fixed in 8.14.
     if not result["address"]:
         result["address"] = extract_labeled_value(body_raw, ["所在地", "住所"], area)
         if result["address"]:
