@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.15"
+VERSION = "8.16"
 
 
 def yen(v):
@@ -69,11 +69,12 @@ def send_report(data):
         "【サイト別取得・判定状況】",
         "・戸建て系：SUUMO / HOME'S / at home を広く検索",
         "・集合住宅：広島市公式の「民泊届出」または「旅館業許可」一覧と、住所または建物名が明確に一致するものだけ採用",
+        "・集合住宅は、マンション名・建物名の完全一致だけでも候補採用（住所取得が不完全でも可）",
         "・集合住宅は公式照合できなければ候補から除外",
         "・物件詳細ページで種別を再確認し、検索画面の共通UI文言だけでは戸建て系にしない",
         "・物件詳細ページの「所在地/住所」を優先し、推薦物件など別物件の住所を混ぜない",
         "・町名だけの公式照合は不採用",
-        "・建物名の部分一致は不採用",
+        "・建物名は完全一致のみ採用。部分一致は不採用",
         "・部屋番号一致だけでは不採用。建物/住所の整合を確認",
         "・家賃上限：10万円以下",
         "",
@@ -84,22 +85,30 @@ def send_report(data):
         "",
         "【今回の候補】",
         "-"*56,
+        "※今回の新着を先に表示しています。",
     ]
     if candidates:
-        for i,p in enumerate(candidates,1): add_property(lines,p,i)
-    else: lines.append("該当なし")
-    lines += ["", "【今回の新着】", "-"*56]
-    if new:
-        for i,p in enumerate(new,1): add_property(lines,p,i)
-    else: lines.append("該当なし")
+        new_ids={p.get("id") for p in new}
+        ordered=[p for p in candidates if p.get("id") in new_ids]
+        ordered += [p for p in candidates if p.get("id") not in new_ids]
+        last_group=None
+        for i,p in enumerate(ordered,1):
+            group="新着" if p.get("id") in new_ids else "既存候補"
+            if group != last_group:
+                lines.append(f"【{group}】")
+                last_group=group
+            add_property(lines,p,i)
+    else:
+        lines.append("該当なし")
+    lines.append("")
     if down:
         lines += ["", "【家賃値下げ】", "-"*56]
         for i,p in enumerate(down,1): add_property(lines,p,i)
     lines += [
         "",
         "="*56,
-        "※第8.15弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
-        "※集合住宅は、現在取得した広島市公式一覧との明確な一致が必要です。",
+        "※第8.16弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
+        "※集合住宅は、現在取得した広島市公式一覧と住所または建物名が明確に一致したものだけ採用します。建物名は完全一致です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
         "※賃貸借契約、管理規約、所有者・管理会社の承諾、消防・建築・条例等は別途確認してください。",
