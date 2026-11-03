@@ -1,0 +1,394 @@
+{
+  "西区己斐中2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区馬木9": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区千田町2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区白島中町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区戸坂出江2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区己斐大迫3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区宇品東7": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区矢賀2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区吉島東1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区宇品西2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区福田3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区天満町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区馬木8": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区丹那町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区戸坂山根2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区吉島西1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区江波西1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区井口2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区古江西町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区戸坂山根1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区観音町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区翠2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区庚午中2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区堀越3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区中山新町2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区牛田新町3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区吉島町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区庚午北1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区牛田早稲田4": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区中山東3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区己斐上5": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区井口3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区東観音町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区井口4": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区本浦町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区東雲3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区江波本町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区向洋新町1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区馬木1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区仁保3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区向洋新町2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区西十日市町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区仁保南1": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区矢賀4": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区大州3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "東区牛田早稲田3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区高須台5": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区高須台4": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "南区東雲2": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  }
+}
