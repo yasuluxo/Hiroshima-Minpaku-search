@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.15"
+VERSION = "8.16"
 
 
 def load_json(path, default):
@@ -759,8 +759,10 @@ def filter_candidates(items, official_db):
         p["address_quality"]="OK" if has_full_address(p.get("address",'')) else ("PARTIAL" if p.get("address") else "MISSING")
         matches=[]
         if kind=="集合住宅":
-            # Apartments/condos are never allowed through without a current official match.
-            if not db_ready or p["address_quality"]!="OK": continue
+            # 8.16: apartments/condos still require a current official match,
+            # but a full street address is no longer mandatory. An exact
+            # building-name match from the listing title is sufficient.
+            if not db_ready: continue
             matches=match_official(p,official_db)
             if not matches: continue
         else:
