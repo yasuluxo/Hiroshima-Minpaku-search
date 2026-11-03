@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-VERSION = "8.16"
+VERSION = "8.17"
 
 
 def yen(v):
@@ -16,6 +16,10 @@ def add_property(lines, p, n):
     if p.get('address'): lines.append(f"   住所：{p['address']}")
     if p.get('address_source'): lines.append(f"   住所取得：{p['address_source']}")
     if p.get('classification_reason'): lines.append(f"   種別判定：{p['classification_reason']}")
+    lines.append(f"   用途地域：{p.get('zoning') or '要確認'}")
+    lines.append(f"   民泊：{p.get('minpaku') or '要確認'} / 旅館業：{p.get('ryokan') or '要確認'}")
+    if p.get('zoning_reason') and p.get('zoning_status') == '要確認':
+        lines.append(f"   用途地域の判定理由：{p['zoning_reason']}")
     if p.get('comment'): lines.append(f"   注目点：{p['comment']}")
     if p.get('official_matches'):
         lines.append("   【広島市公式一覧との照合】")
@@ -51,6 +55,7 @@ def send_report(data):
         f"今回の新着：{len(new)}件",
         f"家賃値下げ：{len(down)}件",
         f"公式照合：部屋一致{match_levels.get('部屋番号一致',0)} / 住所一致{match_levels.get('住所一致',0)} / 建物名一致{match_levels.get('建物名一致',0)}",
+        f"用途地域判定：確認{data.get('zoning_summary',{}).get('checked',0)} / 民泊可{data.get('zoning_summary',{}).get('minpaku_possible',0)} / 旅館業可{data.get('zoning_summary',{}).get('ryokan_possible',0)} / 両方不可{data.get('zoning_summary',{}).get('both_impossible',0)} / 要確認{data.get('zoning_summary',{}).get('unknown',0)}",
         f"旧版履歴の未再検証：{legacy}件（履歴は削除していません）",
         "",
         "【検索・除外の段階別件数】",
@@ -77,6 +82,9 @@ def send_report(data):
         "・建物名は完全一致のみ採用。部分一致は不採用",
         "・部屋番号一致だけでは不採用。建物/住所の整合を確認",
         "・家賃上限：10万円以下",
+        "・用途地域判定：住所を座標化し、公開GISの用途地域ポリゴンと照合（要確認は除外しない）",
+        "・用途地域判定は一次スクリーニング。境界・住所精度・条例・建築基準法・消防法等は広島市へ要確認",
+        "・公式地図での再確認：ひろしま地図ナビ（広島市公式） https://www.city.hiroshima.lg.jp/shisei/gyosei/1021856/1018958.html",
         "",
     ]
     for d in data.get("diagnostics",[]):
@@ -107,15 +115,18 @@ def send_report(data):
     lines += [
         "",
         "="*56,
-        "※第8.16弾では、サイト別の詳細ページ解析を分離し、検索URL取得・詳細ページ読み込み・物件情報解析・種別判定・公式照合・採用を分けて記録しています。",
+        "※第8.17弾では、8.16の候補抽出・戸建て判定・集合住宅公式照合を維持したまま、住所から用途地域を一次判定します。",
+        "※用途地域の自動判定は公開GISデータによる参考値です。位置精度不足・境界付近・データ照合不可は「要確認」と表示し、候補から除外しません。",
+        "※民泊・旅館業の可否は、今回共有された用途地域別一覧に基づく一次判定です。条例、建築基準法、消防法、管理規約、賃貸借契約、所有者承諾等は別途確認が必要です。",
         "※集合住宅は、現在取得した広島市公式一覧と住所または建物名が明確に一致したものだけ採用します。建物名は完全一致です。",
         "※部屋番号だけの一致、町名だけの一致、建物名の部分一致は採用しません。",
         "※広島市公式一覧への掲載は、現在の賃貸募集部屋がそのまま民泊可能という意味ではありません。",
         "※賃貸借契約、管理規約、所有者・管理会社の承諾、消防・建築・条例等は別途確認してください。",
-        "※検索結果の詳細診断・公式PDF診断・公式照合の不一致理由はdiagnostics.jsonに保存しています。",
+        "※検索結果の詳細診断・公式PDF診断・公式照合の不一致理由・用途地域判定結果はdiagnostics.jsonに保存しています。",
+        "※用途地域判定の住所座標・照合結果はzoning_cache.jsonに保存し、次回以降の再照会を減らします。",
     ]
     msg=MIMEText("\n".join(lines),"plain","utf-8")
-    msg["Subject"]=f"広島民泊 第{VERSION}弾 候補{len(candidates)}件 / 新着{len(new)}件 / 公式照合"
+    msg["Subject"]=f"広島民泊 第{VERSION}弾 候補{len(candidates)}件 / 新着{len(new)}件 / 用途地域判定"
     msg["From"]=user; msg["To"]=to
     with smtplib.SMTP_SSL("smtp.gmail.com",465) as smtp:
         smtp.login(user,password); smtp.send_message(msg)
