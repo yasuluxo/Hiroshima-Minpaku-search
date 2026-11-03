@@ -1,4 +1,4 @@
-name: Daily Property Search 8.15
+name: Daily Property Search 8.16
 
 on:
   workflow_dispatch:
@@ -11,10 +11,13 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -24,7 +27,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install Playwright Chromium
-        run: python -m playwright install --with-deps chromium
+        run: |
+          python -m playwright install --with-deps chromium
 
       - name: Run property search
         run: python search.py
@@ -37,7 +41,9 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add seen.json price_history.json candidate_history.json diagnostics.json official_db.json
+
           git diff --cached --quiet && echo "No state changes" || git commit -m "update property search state"
 
       - name: Push state
