@@ -10,8 +10,9 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE, CANDIDATE_FILE
 from official_db import build_official_db, match_official
 from mailer import send_report
+from zoning import enrich_candidates
 
-VERSION = "8.16"
+VERSION = "8.17"
 
 
 def load_json(path, default):
@@ -888,6 +889,9 @@ def main():
 
     unique=dedupe(raw_items)
     candidates=filter_candidates(unique,official_db)
+    # 8.17: zoning screening is an independent enrichment stage. It never
+    # changes the existing detached/apartment eligibility filter.
+    candidates, zoning_summary = enrich_candidates(candidates)
     new_items,price_down=detect_changes(candidates)
     hist=update_history(candidates)
     valid_hist=valid_history_records(hist)
@@ -923,7 +927,7 @@ def main():
         if p.get("detail_page_ok") and not p.get("detail_validated"):
             unresolved_samples.append({"source":p.get("source"),"area":p.get("area"),"title":p.get("title"),"address":p.get("address"),"url":p.get("url"),"property_label":p.get("property_label"),"type_evidence":p.get("type_evidence"),"structure":p.get("structure"),"classification_reason":p.get("classification_reason")})
             if len(unresolved_samples)>=100: break
-    report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
+    report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]},"zoning_summary":zoning_summary}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
