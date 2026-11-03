@@ -367,24 +367,50 @@ def compact_address(s):
     return norm(s)
 
 
+def _listing_building_norm(title):
+    """Normalize a listing title for exact building-name matching.
+
+    This intentionally removes only unit/floor/layout noise. It does NOT do
+    substring matching and does NOT remove building-distinguishing tokens such
+    as II/2, 新館, 別館, etc.
+    """
+    t = unicodedata.normalize("NFKC", title or "")
+    t = re.sub(r"\s+", " ", t).strip()
+    # Remove common portal suffixes / unit indicators at the end of a title.
+    t = re.sub(r"\s*(?:\d{3,4})\s*号室?\s*$", "", t, flags=re.I)
+    t = re.sub(r"\s*(?:\d{1,2})\s*階\s*$", "", t, flags=re.I)
+    t = re.sub(r"\s*[-‐‑‒–—]\s*(?:\d{3,4})\s*$", "", t, flags=re.I)
+    t = re.sub(r"\s+(?:[1-5](?:LDK|DK|K|LK)(?:[+＋]S)?|ワンルーム)\s*$", "", t, flags=re.I)
+    # Some portals append a bare room number to the building title.
+    t = re.sub(r"\s+\d{3,4}\s*$", "", t, flags=re.I)
+    return norm(t)
+
+
 def match_official(property_item, db):
-    """Conservative official-list matching: exact base address/building, then room."""
+    """Match a listing against Hiroshima City's official lists.
+
+    8.16 rule for apartments/condos:
+      - exact building-name match is sufficient, even when the listing address
+        cannot be extracted completely;
+      - exact base-address match is also sufficient;
+      - room number alone is never sufficient;
+      - town-only and partial building-name matches are never accepted.
+
+    The relaxed building-name rule is only used as an *official-match signal*.
+    Detached-house candidate eligibility is unchanged in search.py.
+    """
     paddr_raw = property_item.get("address", "") or ""
     ptitle = property_item.get("title", "") or ""
-    pdesc = property_item.get("description", "") or ""
     pward, pbase, pbuilding, prooms = extract_address_parts(paddr_raw)
     if not pward:
-        # Some listing addresses omit '広島市'; try with the selected ward.
         area = property_item.get("area", "")
         if area in WARD_NAMES:
             pward, pbase, pbuilding, prooms = extract_address_parts("広島市" + area + paddr_raw)
 
-    # Use title only as a building-name signal after stripping room/floor noise.
-    title_clean = unicodedata.normalize("NFKC", ptitle or "")
-    title_clean = re.sub(r"\s*(?:\d+階\s*/\s*\d+|\d{3,4}号室?|\d{3,4})\s*$", "", title_clean).strip()
-    title_norm = norm(title_clean)
+    title_norm = _listing_building_norm(ptitle)
     if re.search(r"<[^>]+>", ptitle) or "class=" in ptitle.lower() or "onclick=" in ptitle.lower():
         title_norm = ""
+
     matches = []
     for r in db.get("records", []):
         if pward and r.get("ward") and pward != r.get("ward"):
@@ -393,38 +419,36 @@ def match_official(property_item, db):
         rbuilding = r.get("building_norm") or norm(r.get("building_name") or r.get("name", ""))
         rrooms = set(r.get("rooms") or [])
 
-        # 1) Exact base address is required for an address-level match.
         base_exact = bool(pbase and rbase and norm(pbase) == norm(rbase))
-
-        # 2) Exact building name. Never use substring matching.
-        building_exact = bool(pbuilding and rbuilding and norm(pbuilding) == rbuilding)
+        address_building_exact = bool(pbuilding and rbuilding and norm(pbuilding) == rbuilding)
         title_building_exact = bool(title_norm and rbuilding and title_norm == rbuilding)
+        building_exact = address_building_exact or title_building_exact
+        room_exact = bool(prooms and rrooms and set(prooms) & rrooms)
 
-        # A room number is never sufficient by itself: the building identity must
-        # also agree when both sides have a building name. This prevents cases such
-        # as "西十日市ビル" being treated as "十日市ビル" just because 201 matches.
+        # Building identity must agree whenever both sides have one.
         building_consistent = (
             not pbuilding
             or not rbuilding
-            or building_exact
+            or address_building_exact
             or title_building_exact
         )
-        room_exact = bool(prooms and rrooms and set(prooms) & rrooms)
 
         if base_exact and room_exact and building_consistent:
             level = "部屋番号一致"
         elif base_exact and building_consistent:
             level = "住所一致"
-        elif building_exact or (title_building_exact and (not pbase or not rbase)):
+        elif building_exact:
+            # 8.16: exact building-name match is sufficient, even when the
+            # listing's full street address was not extractable.
             level = "建物名一致"
         else:
             continue
 
         item = dict(r)
         item["match_level"] = level
+        item["match_basis"] = "building_name" if building_exact and not base_exact else ("address" if base_exact else "building_name")
         matches.append(item)
 
-    # Prefer the strongest level and remove duplicate official rows.
     rank = {"部屋番号一致": 3, "住所一致": 2, "建物名一致": 1}
     matches.sort(key=lambda x: (-rank.get(x.get("match_level", ""), 0), x.get("type", ""), x.get("address", "")))
     out, seen = [], set()
@@ -434,3 +458,4 @@ def match_official(property_item, db):
             seen.add(key)
             out.append(m)
     return out
+
