@@ -10,9 +10,8 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, PRICE_FILE, DIAG_FILE, CANDIDATE_FILE
 from official_db import build_official_db, match_official
 from mailer import send_report
-from zoning import enrich_candidates
 
-VERSION = "8.17"
+VERSION = "8.18"
 
 
 def load_json(path, default):
@@ -518,11 +517,65 @@ def extract_labeled_value(text, labels, area=""):
     return cleaned[0] if cleaned else ""
 
 
+def classify_permission_condition(text, kind):
+    """Return one of the requested listing-information statuses.
+
+    Absence is never treated as prohibition. Explicit negative wording takes
+    precedence when a listing contains contradictory positive/negative text.
+    """
+    t = unicodedata.normalize("NFKC", clean_text(text or ""))
+    t = re.sub(r"\s+", "", t)
+    patterns = {
+        "pet": {
+            "negative": r"ペット(?:飼育|の飼育|相談)?(?:は|が)?(?:不可|禁止|ＮＧ|NG)|ペット不可|犬猫不可|動物不可",
+            "positive": r"ペット(?:飼育)?(?:相談可|相談|可|ＯＫ|OK)|小型犬可|犬猫相談|ペット可",
+        },
+        "office": {
+            "negative": r"(?:事務所|事業用|SOHO)(?:利用|使用|相談)?(?:は|が)?(?:不可|禁止|ＮＧ|NG)|事務所不可|事務所使用不可",
+            "positive": r"(?:事務所|事業用)(?:利用|使用)?(?:相談可|相談|可)|SOHO(?:相談可|相談|可|ＯＫ|OK)|事務所可",
+        },
+        "music": {
+            "negative": r"楽器(?:演奏)?(?:使用|相談)?(?:は|が)?(?:不可|禁止|ＮＧ|NG)|楽器不可|楽器演奏不可",
+            "positive": r"楽器(?:演奏)?(?:相談可|相談|可|ＯＫ|OK)|楽器可|楽器相談",
+        },
+    }
+    p = patterns[kind]
+    if re.search(p["negative"], t, re.I):
+        return "不可"
+    if re.search(p["positive"], t, re.I):
+        return "記載あり"
+    return "記載なし"
+
+
+def apply_permission_conditions(p, evidence=""):
+    # Only property-specific detail rows/card text are used; do not scan the
+    # whole portal page where recommended listings may be mixed in.
+    text = " ".join([
+        evidence or "", p.get("description", ""), p.get("property_label", ""),
+    ])
+    p["pet_consultation"] = classify_permission_condition(text, "pet")
+    p["office_consultation"] = classify_permission_condition(text, "office")
+    p["music_consultation"] = classify_permission_condition(text, "music")
+
+
+def extract_condition_evidence(text):
+    """Keep only detail-table lines around the three requested conditions."""
+    lines = [clean_text(x) for x in (text or "").splitlines()]
+    lines = [x for x in lines if x]
+    picked = set()
+    key = re.compile(r"ペット|事務所|事業用|SOHO|楽器")
+    for i, line in enumerate(lines):
+        if key.search(line):
+            for j in range(max(0, i - 1), min(len(lines), i + 2)):
+                picked.add(j)
+    return "\n".join(lines[i] for i in sorted(picked))[:6000]
+
+
 def extract_detail_structured(page, area, source=""):
     """Extract property-specific detail signals without borrowing sibling data."""
     result = {"title":"", "address":"", "rent":None, "size":None,
               "layout":"", "property_label":"", "structure":"",
-              "detail_text":"", "type_evidence":""}
+              "detail_text":"", "type_evidence":"", "condition_text":""}
 
     source_selectors = {
         "SUUMO": [".property_data", ".data_table", ".detail_info", ".detail", "dl", "table"],
@@ -542,6 +595,7 @@ def extract_detail_structured(page, area, source=""):
 
     if chunks:
         joined = "\n".join(chunks)
+        result["condition_text"] = extract_condition_evidence(joined)
         result["type_evidence"] = extract_type_evidence_from_text(joined)
         m = re.search(
             r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*"
@@ -708,6 +762,8 @@ def enrich_from_detail(page, p):
             if d.get("rent") is not None: p["rent"]=d["rent"]
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
             p["property_label"]=d.get("property_label") or p.get("property_label","")
+            p["condition_text"]=d.get("condition_text", "")[:18000]
+            apply_permission_conditions(p, p.get("condition_text", ""))
             kind,reason=classify_kind_from_signals(
                 p.get("property_label",""), d.get("detail_text",body), d.get("structure",""),
                 p.get("title",""), d.get("type_evidence","")
@@ -889,9 +945,6 @@ def main():
 
     unique=dedupe(raw_items)
     candidates=filter_candidates(unique,official_db)
-    # 8.17: zoning screening is an independent enrichment stage. It never
-    # changes the existing detached/apartment eligibility filter.
-    candidates, zoning_summary = enrich_candidates(candidates)
     new_items,price_down=detect_changes(candidates)
     hist=update_history(candidates)
     valid_hist=valid_history_records(hist)
@@ -927,7 +980,7 @@ def main():
         if p.get("detail_page_ok") and not p.get("detail_validated"):
             unresolved_samples.append({"source":p.get("source"),"area":p.get("area"),"title":p.get("title"),"address":p.get("address"),"url":p.get("url"),"property_label":p.get("property_label"),"type_evidence":p.get("type_evidence"),"structure":p.get("structure"),"classification_reason":p.get("classification_reason")})
             if len(unresolved_samples)>=100: break
-    report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]},"zoning_summary":zoning_summary}
+    report={"version":VERSION,"stage_summary":stage_summary,"classification_reason_counts":reason_counts,"unresolved_samples":unresolved_samples,"official_probe_summary":official_probe_summary,"official_probe":official_probe[:300],"total_raw":len(raw_items),"total_retrieved":len(unique),"candidates":len(candidates),"current":len(candidates),"new":new_items,"price_down":price_down,"all_candidates":candidates,"sample":candidates,"diagnostics":diagnostics,"official_db":official_db,"history":hist,"valid_history_count":len(valid_hist),"legacy_unvalidated_count":max(0,len(hist.get("records",{}))-len(valid_hist)) if isinstance(hist,dict) else 0,"official_match_levels":{k:sum(1 for p in candidates if p.get("official_match_level")==k) for k in ["部屋番号一致","住所一致","建物名一致"]}}
     save_json(DIAG_FILE,report); send_report(report)
 
 if __name__=="__main__": main()
