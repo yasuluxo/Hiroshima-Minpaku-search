@@ -462,5 +462,21 @@
     "zoning_status": "要確認",
     "zoning_reason": "住所を座標に変換できず",
     "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "西区己斐上3": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "住所を座標に変換できず",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
+  },
+  "中区羽衣町": {
+    "zoning": "",
+    "minpaku": "要確認",
+    "ryokan": "要確認",
+    "zoning_status": "要確認",
+    "zoning_reason": "番地情報なし",
+    "zoning_source": "OpenStreetMap Nominatim（住所座標）"
   }
 }
