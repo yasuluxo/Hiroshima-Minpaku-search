@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.18"
+VERSION = "8.19"
 
 
 def load_json(path, default):
@@ -98,28 +98,26 @@ def extract_address(text, area):
     return ""
 
 def make_canonical_id(p):
-    # A detail URL identifies one listing much more reliably than a partial
-    # address. SUUMO often displays only a district-level address, and portal
-    # pages can contain broker/recommended-property addresses elsewhere.
-    url = p.get("url", "")
-    if url:
-        return f"url|{norm(url)}"
     address = norm(p.get("address"))
     title = norm(p.get("title"))
     rent = p.get("rent") or 0
     layout = norm(p.get("layout"))
     size = round(float(p.get("size") or 0), 1)
-    area = p.get("area", "")
-    return f"fallback|{address}|{title}|{rent}|{layout}|{size}|{area}"
-
+    room_match = re.search(r"(?<!\d)(\d{3,4})号室", unicodedata.normalize("NFKC", " ".join([p.get("title", ""), p.get("description", "")])))
+    room = room_match.group(1) if room_match else ""
+    # Cross-portal merge is deliberately strict: exact normalized full address
+    # and title plus matching rent/layout/area. Distinct rooms remain separate.
+    if address and has_full_address(p.get("address", "")) and title:
+        return f"property|{address}|{title}|{room}|{rent}|{layout}|{size}"
+    url = p.get("url", "")
+    return f"url|{norm(url)}" if url else f"fallback|{address}|{title}|{rent}|{layout}|{size}|{p.get('area','')}"
 
 def classify_kind_from_signals(label="", text="", structure="", title="", type_evidence=""):
-    """Classify from property-specific signals only.
+    """Classify conservatively from this listing's own type field/title.
 
-    8.11: never classify a property as an apartment merely because the word
-    'マンション'/'アパート' appears somewhere in page-wide navigation,
-    recommendation widgets, or footer text.  Explicit type rows and
-    property-specific title signals take priority.
+    Attached houses are the only class that bypasses the official-list gate.
+    Townhouses, terrace houses and maisonettes are treated as multi-unit/shared
+    structures and therefore remain subject to the same official check as flats.
     """
     label = clean_text(label)
     structure = clean_text(structure)
@@ -127,49 +125,71 @@ def classify_kind_from_signals(label="", text="", structure="", title="", type_e
     text = clean_text(text)
     type_evidence = clean_text(type_evidence)
 
-    detached = r"一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋"
+    detached = r"一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建"
     apartment = r"マンション|アパート|集合住宅|賃貸マンション|賃貸アパート|貸マンション|貸アパート|貸家以外の共同住宅"
+    shared_house = r"テラスハウス|タウンハウス|長屋|メゾネット"
 
-    # 1) Explicit extracted type value is authoritative.
-    if re.search(rf"^(?:賃貸)?(?:{detached})$", label):
-        return "戸建て系", "explicit_detached_label"
-    if re.search(rf"^(?:賃貸)?(?:{apartment})$", label):
-        return "集合住宅", "explicit_apartment_label"
+    # The label is populated only from an explicit property-type field on the
+    # detail page. Search-card headings and arbitrary body words are not labels.
+    if re.fullmatch(rf"(?:賃貸)?(?:{detached})", label):
+        return "戸建て系", "detail_type_row_detached"
+    if re.fullmatch(rf"(?:賃貸)?(?:{apartment})", label):
+        return "集合住宅", "detail_type_row_apartment"
+    if re.fullmatch(rf"(?:賃貸)?(?:{shared_house})", label):
+        return "集合住宅", "detail_type_row_shared_structure"
 
-    # 2) The type evidence comes only from a labeled property-type row.
-    if re.search(rf"(?:{detached})", type_evidence):
-        return "戸建て系", "detail_type_row"
-    if re.search(rf"(?:{apartment})", type_evidence):
-        return "集合住宅", "detail_type_row"
+    evidence = label + " " + type_evidence
+    if re.search(detached, evidence):
+        return "戸建て系", "detail_type_row_detached"
+    if re.search(apartment, evidence):
+        return "集合住宅", "detail_type_row_apartment"
+    if re.search(shared_house, evidence):
+        return "集合住宅", "detail_type_row_shared_structure"
 
-    # 3) Site/detail structure evidence can identify the building type.
-    if re.search(rf"(?:{detached})", structure):
-        return "戸建て系", "detached_structure"
-    if re.search(rf"(?:{apartment})", structure):
-        return "集合住宅", "apartment_structure"
+    # A listing title can support classification only when it explicitly says
+    # detached house, apartment, townhouse or maisonette. Names like メゾン/ハイツ
+    # alone are not enough to determine the legal/building category.
+    if re.search(detached, title):
+        return "戸建て系", "explicit_detached_title"
+    if re.search(shared_house, title):
+        return "集合住宅", "explicit_shared_structure_title"
+    if re.search(r"マンション|アパート", title):
+        return "集合住宅", "explicit_apartment_title"
 
-    # 4) Property-specific title is a safe supporting signal.
-    if re.search(rf"(?:{detached})(?:\s*賃貸)?$", title):
-        return "戸建て系", "detached_title"
-    if re.search(r"(?:マンション|レジデンス|ハイツ|コーポ|パレス|ビル)$", title):
-        return "集合住宅", "residential_building_title"
-    if re.search(r"(?:アパート|マンション)", title):
-        return "集合住宅", "residential_title"
-
-    # 5) Only inspect a short set of lines that look like type rows.
-    # Never search the entire body for apartment words: site navigation often
-    # contains those words even on a detached-house detail page.
+    # Inspect only short, labeled type rows. Never infer from wood structure,
+    # navigation, recommendations, footer text, or general description words.
     for line in text.splitlines():
-        line=clean_text(line)
-        if not line or len(line)>180:
+        line = clean_text(line)
+        if not line or len(line) > 180:
             continue
-        if re.search(r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別|建物)", line):
-            if re.search(rf"(?:{detached})", line):
-                return "戸建て系", "detail_type_line"
-            if re.search(rf"(?:{apartment})", line):
-                return "集合住宅", "detail_type_line"
+        if re.search(r"^\s*(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)", line):
+            if re.search(detached, line):
+                return "戸建て系", "detail_type_line_detached"
+            if re.search(apartment, line):
+                return "集合住宅", "detail_type_line_apartment"
+            if re.search(shared_house, line):
+                return "集合住宅", "detail_type_line_shared_structure"
 
     return "不明", "no_property_specific_signal"
+
+
+def classify_subtype(label="", title="", type_evidence=""):
+    source = " ".join([clean_text(label), clean_text(title), clean_text(type_evidence)])
+    if re.search(r"メゾネット", source):
+        return "メゾネット"
+    if re.search(r"タウンハウス", source):
+        return "タウンハウス"
+    if re.search(r"テラスハウス", source):
+        return "テラスハウス"
+    if re.search(r"長屋", source):
+        return "長屋"
+    if re.search(r"一戸建て|一戸建|貸家|戸建て|戸建|貸戸建", source):
+        return "戸建て"
+    if re.search(r"マンション", source):
+        return "マンション"
+    if re.search(r"アパート", source):
+        return "アパート"
+    return "不明"
 
 def score_property(p):
     text = " ".join([p.get("title", ""), p.get("description", ""), p.get("property_label", "")])
@@ -244,7 +264,7 @@ def title_from_card(text, anchor_text=""):
 
 def make_item(source, area, title, txt, full, property_label=""):
     label = clean_text(property_label)
-    kind, reason = classify_kind_from_signals(label, txt, "", title)
+    kind, reason = classify_kind_from_signals("", "", "", title)
     return {
         "source": source,
         "area": area,
@@ -283,8 +303,8 @@ def scrape_suumo(page, area, url):
             layout=c.locator(".cassetteitem_madori").first.inner_text() if c.locator(".cassetteitem_madori").count() else parse_layout(txt)
             sizetxt=c.locator(".cassetteitem_menseki").first.inner_text() if c.locator(".cassetteitem_menseki").count() else txt
             addr=extract_address(txt,area)
-            label = title_from_card(txt)
-            kind, reason = classify_kind_from_signals(label, txt, "", title)
+            label = ""
+            kind, reason = classify_kind_from_signals(label, "", "", title)
             item={"source":"SUUMO","area":area,"title":title,"rent":parse_rent(renttxt),"layout":clean_text(layout),"size":parse_area(sizetxt),"address":addr,"url":href,"description":txt,"property_label":label,"property_kind":kind,"classification_reason":reason}
             seen.add(href); items.append(item)
         except Exception:
@@ -450,28 +470,29 @@ def jsonld_value(obj, key):
 
 
 def extract_type_evidence_from_text(text):
-    """Return only values found next to explicit property-type labels.
+    """Extract property type only when it is paired with a type-field label.
 
-    This intentionally ignores arbitrary occurrences of apartment words in the
-    page body, because portal navigation/recommendation blocks commonly contain
-    them.
+    Supports both same-line rows and portals that render the label and value
+    on adjacent lines (common in HOME'S/at home detail tables).
     """
-    vals=[]
-    labels=r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)"
-    types=r"(?:賃貸)?(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション)"
-    for line in (text or "").splitlines():
-        line=clean_text(line)
-        if not line or len(line)>220:
+    vals = []
+    labels = r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)"
+    types = r"(?:賃貸)?(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋|メゾネット|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション)"
+    lines = [clean_text(x) for x in (text or "").splitlines()]
+    lines = [x for x in lines if x]
+    for i, line in enumerate(lines):
+        if len(line) > 220:
             continue
-        m=re.search(rf"{labels}\s*(?:[:：]\s*|\s+){types}",line)
+        m = re.search(rf"^\s*{labels}\s*(?:[:：]\s*|\s+){types}", line)
         if m:
             vals.append(m.group(0))
             continue
-        # Some portals render label and value as adjacent text without punctuation.
-        if re.search(labels,line) and re.search(types,line):
-            vals.append(line)
+        if re.fullmatch(labels, line) and i + 1 < len(lines):
+            nxt = lines[i + 1]
+            if len(nxt) <= 100 and re.fullmatch(types, nxt):
+                vals.append(line + ": " + nxt)
+                continue
     return " | ".join(dict.fromkeys(vals))[:1500]
-
 
 def extract_labeled_value(text, labels, area=""):
     """Extract a value only when it is attached to an explicit field label.
@@ -550,26 +571,28 @@ def classify_permission_condition(text, kind):
 def apply_permission_conditions(p, evidence=""):
     # Only property-specific detail rows/card text are used; do not scan the
     # whole portal page where recommended listings may be mixed in.
-    text = " ".join([
-        evidence or "", p.get("description", ""), p.get("property_label", ""),
-    ])
+    text = evidence or ""
     p["pet_consultation"] = classify_permission_condition(text, "pet")
     p["office_consultation"] = classify_permission_condition(text, "office")
     p["music_consultation"] = classify_permission_condition(text, "music")
 
 
 def extract_condition_evidence(text):
-    """Keep only detail-table lines around the three requested conditions."""
+    """Extract only the condition row and, if separated, its immediate value."""
     lines = [clean_text(x) for x in (text or "").splitlines()]
     lines = [x for x in lines if x]
-    picked = set()
     key = re.compile(r"ペット|事務所|事業用|SOHO|楽器")
+    picked = []
     for i, line in enumerate(lines):
-        if key.search(line):
-            for j in range(max(0, i - 1), min(len(lines), i + 2)):
-                picked.add(j)
-    return "\n".join(lines[i] for i in sorted(picked))[:6000]
-
+        if not key.search(line):
+            continue
+        picked.append(line)
+        # Some portals render a label and value on separate adjacent lines.
+        if len(line) <= 24 and i + 1 < len(lines):
+            nxt = lines[i + 1]
+            if len(nxt) <= 80 and not re.search(r"所在地|住所|賃料|管理費|間取り|面積|築年|交通|構造|階数", nxt):
+                picked.append(nxt)
+    return "\n".join(dict.fromkeys(picked))[:6000]
 
 def extract_detail_structured(page, area, source=""):
     """Extract property-specific detail signals without borrowing sibling data."""
@@ -596,10 +619,9 @@ def extract_detail_structured(page, area, source=""):
     if chunks:
         joined = "\n".join(chunks)
         result["condition_text"] = extract_condition_evidence(joined)
-        result["type_evidence"] = extract_type_evidence_from_text(joined)
         m = re.search(
             r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*"
-            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
             joined,
         )
         if m:
@@ -616,7 +638,13 @@ def extract_detail_structured(page, area, source=""):
         typ = obj.get("@type") if isinstance(obj, dict) else ""
         if isinstance(typ, list):
             typ = " ".join(map(str, typ))
-        if not any(x in str(typ).lower() for x in ["product", "residence", "apartment", "house", "offer"]):
+        typ_text = str(typ)
+        typ_low = typ_text.lower()
+        if any(x in typ_low for x in ["singlefamilyresidence", "house"]):
+            result["type_evidence"] = (result.get("type_evidence", "") + " JSON-LD:一戸建て").strip()
+        elif any(x in typ_low for x in ["apartment", "residence", "accommodation"]):
+            result["type_evidence"] = (result.get("type_evidence", "") + " JSON-LD:集合住宅").strip()
+        if not any(x in typ_low for x in ["product", "residence", "apartment", "house", "offer"]):
             continue
         name = jsonld_value(obj, "name")
         if name and not result["title"]:
@@ -663,6 +691,17 @@ def extract_detail_structured(page, area, source=""):
         body_raw = ""
     body = clean_text(body_raw)
     result["detail_text"] = (result.get("detail_text", "") + " " + body[:12000]).strip()
+    primary_body = body_raw
+    for marker in ["この物件を見た人はこんな物件も見ています", "この物件を見た人", "関連物件", "おすすめ物件", "おすすめの物件", "他の物件"]:
+        if marker in primary_body:
+            primary_body = primary_body.split(marker, 1)[0]
+    # The detail table is preferred, but body rows are a fallback for portals
+    # whose labels and values are not wrapped in table elements.
+    body_condition_evidence = extract_condition_evidence(primary_body)
+    result["condition_text"] = body_condition_evidence
+    # Discard any type/condition hints gathered from broad selector collections;
+    # only the primary listing section may classify the property.
+    result["property_label"] = ""
 
     # Never page-wide scan for addresses: that is the exact bug fixed in 8.14.
     if not result["address"]:
@@ -676,13 +715,13 @@ def extract_detail_structured(page, area, source=""):
     if not result["layout"]:
         result["layout"] = parse_layout(body)
 
-    body_type_evidence = extract_type_evidence_from_text(body_raw)
+    body_type_evidence = extract_type_evidence_from_text(primary_body)
     if body_type_evidence:
         result["type_evidence"] = " | ".join(dict.fromkeys(
             [x for x in [result.get("type_evidence", ""), body_type_evidence] if x]
         ))[:1500]
         m = re.search(
-            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+            r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
             body_type_evidence,
         )
         if m:
@@ -695,7 +734,7 @@ def extract_detail_structured(page, area, source=""):
                 continue
             if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)", line):
                 m = re.search(
-                    r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋)",
+                    r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
                     line,
                 )
                 if m:
@@ -761,7 +800,7 @@ def enrich_from_detail(page, p):
             if d.get("size") is not None: p["size"]=d["size"]
             if d.get("rent") is not None: p["rent"]=d["rent"]
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
-            p["property_label"]=d.get("property_label") or p.get("property_label","")
+            p["property_label"]=d.get("property_label") or ""
             p["condition_text"]=d.get("condition_text", "")[:18000]
             apply_permission_conditions(p, p.get("condition_text", ""))
             kind,reason=classify_kind_from_signals(
@@ -770,8 +809,13 @@ def enrich_from_detail(page, p):
             )
             p["type_evidence"]=d.get("type_evidence","")[:1500]
             p["property_kind"]=kind
+            p["property_subtype"]=classify_subtype(p.get("property_label", ""), p.get("title", ""), p.get("type_evidence", ""))
             p["classification_reason"]=reason
-            p["detail_validated"]=kind in ("戸建て系","集合住宅") and bool(p.get("address",""))
+            # For apartments, an exact official building-name match may validate
+            # even if the portal hides the street address. The official gate below
+            # still decides whether that listing can become a candidate.
+            has_identity = bool(p.get("address")) or (kind == "集合住宅" and bool(p.get("title")))
+            p["detail_validated"]=kind in ("戸建て系","集合住宅") and has_identity
             p["detail_source"]=p.get("url")
             if p["detail_validated"]:
                 p["detail_attempts"]=attempt
@@ -876,10 +920,30 @@ def detect_changes(candidates):
     if not isinstance(prices,dict): prices={}
     new_items=[]; price_down=[]
     for p in candidates:
-        cid=p["id"]; old=prices.get(cid)
-        if cid not in seen and not (p.get("url") and p["url"] in seen): p["status"]="新着"; new_items.append(p)
-        if old is not None and p.get("rent") is not None and p["rent"]<old: p["old_price"]=old; p["status"]="値下げ"; price_down.append(p)
-        seen[cid]=True
+        cid = p["id"]
+        prior_urls = [x.get("url") for x in p.get("source_urls", []) if x.get("url")]
+        # Bridge 8.18 URL-based IDs to 8.19 property-level duplicate IDs. This
+        # prevents already-seen listings from being reported as new again and
+        # carries forward their previous rent history without deleting state.
+        legacy_ids = [f"url|{norm(u)}" for u in prior_urls if f"url|{norm(u)}" in seen or f"url|{norm(u)}" in prices]
+        if cid not in seen and cid not in prices and legacy_ids:
+            cid = legacy_ids[0]
+            p["id"] = cid
+        old = prices.get(cid)
+        if old is None:
+            for legacy_id in legacy_ids:
+                if prices.get(legacy_id) is not None:
+                    old = prices[legacy_id]
+                    break
+        already_seen = cid in seen or (p.get("url") and p["url"] in seen) or any(u in seen for u in prior_urls)
+        if not already_seen:
+            p["status"] = "新着"
+            new_items.append(p)
+        if old is not None and p.get("rent") is not None and p["rent"] < old:
+            p["old_price"] = old
+            p["status"] = "値下げ"
+            price_down.append(p)
+        seen[cid] = True
         if p.get("url"): seen[p["url"]]=True
         if p.get("rent") is not None: prices[cid]=p["rent"]
     save_json(SEEN_FILE,seen); save_json(PRICE_FILE,prices)
