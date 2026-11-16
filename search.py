@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.19"
+VERSION = "8.20"
 
 
 def load_json(path, default):
@@ -98,19 +98,28 @@ def extract_address(text, area):
     return ""
 
 def make_canonical_id(p):
+    """Stable property identity; do not let rent changes create new records.
+
+    Full-address records use room number when available. If a portal omits the
+    room number, title + layout + area are retained as conservative safeguards.
+    URL identity remains the fallback when the address is incomplete.
+    """
     address = norm(p.get("address"))
     title = norm(p.get("title"))
-    rent = p.get("rent") or 0
     layout = norm(p.get("layout"))
     size = round(float(p.get("size") or 0), 1)
-    room_match = re.search(r"(?<!\d)(\d{3,4})号室", unicodedata.normalize("NFKC", " ".join([p.get("title", ""), p.get("description", "")])))
+    room_source = unicodedata.normalize(
+        "NFKC", " ".join([p.get("room_number", ""), p.get("title", ""), p.get("description", "")])
+    )
+    room_match = re.search(r"(?<!\d)(\d{3,4})\s*号室?", room_source)
     room = room_match.group(1) if room_match else ""
-    # Cross-portal merge is deliberately strict: exact normalized full address
-    # and title plus matching rent/layout/area. Distinct rooms remain separate.
-    if address and has_full_address(p.get("address", "")) and title:
-        return f"property|{address}|{title}|{room}|{rent}|{layout}|{size}"
+    if address and has_full_address(p.get("address", "")):
+        if room:
+            return f"property|{address}|room|{room}"
+        if title and (layout or size):
+            return f"property|{address}|{title}|{layout}|{size}"
     url = p.get("url", "")
-    return f"url|{norm(url)}" if url else f"fallback|{address}|{title}|{rent}|{layout}|{size}|{p.get('area','')}"
+    return f"url|{norm(url)}" if url else f"fallback|{address}|{title}|{layout}|{size}|{p.get('area','')}"
 
 def classify_kind_from_signals(label="", text="", structure="", title="", type_evidence=""):
     """Classify conservatively from this listing's own type field/title.
@@ -162,7 +171,7 @@ def classify_kind_from_signals(label="", text="", structure="", title="", type_e
         line = clean_text(line)
         if not line or len(line) > 180:
             continue
-        if re.search(r"^\s*(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)", line):
+        if re.search(r"^\s*(?:物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別)", line):
             if re.search(detached, line):
                 return "戸建て系", "detail_type_line_detached"
             if re.search(apartment, line):
@@ -476,7 +485,7 @@ def extract_type_evidence_from_text(text):
     on adjacent lines (common in HOME'S/at home detail tables).
     """
     vals = []
-    labels = r"(?:物件種別|建物種別|物件タイプ|建物タイプ|種目|種別)"
+    labels = r"(?:物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別)"
     types = r"(?:賃貸)?(?:一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|テラスハウス|タウンハウス|長屋|メゾネット|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション)"
     lines = [clean_text(x) for x in (text or "").splitlines()]
     lines = [x for x in lines if x]
@@ -620,7 +629,7 @@ def extract_detail_structured(page, area, source=""):
         joined = "\n".join(chunks)
         result["condition_text"] = extract_condition_evidence(joined)
         m = re.search(
-            r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)\s*[:：]?\s*(?:賃貸)?\s*"
+            r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目)\s*[:：]?\s*(?:賃貸)?\s*"
             r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
             joined,
         )
@@ -640,9 +649,11 @@ def extract_detail_structured(page, area, source=""):
             typ = " ".join(map(str, typ))
         typ_text = str(typ)
         typ_low = typ_text.lower()
-        if any(x in typ_low for x in ["singlefamilyresidence", "house"]):
+        # Only highly specific schema types are accepted. Generic Residence /
+        # Accommodation is too broad to decide whether a Japanese rental is a flat.
+        if "singlefamilyresidence" in typ_low:
             result["type_evidence"] = (result.get("type_evidence", "") + " JSON-LD:一戸建て").strip()
-        elif any(x in typ_low for x in ["apartment", "residence", "accommodation"]):
+        elif "apartment" in typ_low:
             result["type_evidence"] = (result.get("type_evidence", "") + " JSON-LD:集合住宅").strip()
         if not any(x in typ_low for x in ["product", "residence", "apartment", "house", "offer"]):
             continue
@@ -691,8 +702,27 @@ def extract_detail_structured(page, area, source=""):
         body_raw = ""
     body = clean_text(body_raw)
     result["detail_text"] = (result.get("detail_text", "") + " " + body[:12000]).strip()
+    # Prefer the provider's main listing container, then cut off recommendation
+    # blocks. The full body is retained separately for human-readable context.
     primary_body = body_raw
-    for marker in ["この物件を見た人はこんな物件も見ています", "この物件を見た人", "関連物件", "おすすめ物件", "おすすめの物件", "他の物件"]:
+    primary_root = page.locator("body")
+    main_selectors = {
+        "HOME'S": ["main", "#contents", "#content", "[class*=mainContents]", "[class*=detailContents]"],
+        "at home": ["main", "#contents", "#content", "[class*=detailContents]", "[class*=detail]"],
+        "SUUMO": ["#contents", "#js-main", "main", ".property_data", ".detail_info"],
+    }
+    for selector in main_selectors.get(source, []):
+        try:
+            loc = page.locator(selector).first
+            if loc.count():
+                candidate = loc.inner_text(timeout=2500)
+                if len(clean_text(candidate)) >= 250:
+                    primary_body = candidate
+                    primary_root = loc
+                    break
+        except Exception:
+            pass
+    for marker in ["この物件を見た人はこんな物件も見ています", "この物件を見た人", "関連物件", "おすすめ物件", "おすすめの物件", "他の物件", "似た条件の物件"]:
         if marker in primary_body:
             primary_body = primary_body.split(marker, 1)[0]
     # The detail table is preferred, but body rows are a fallback for portals
@@ -715,7 +745,22 @@ def extract_detail_structured(page, area, source=""):
     if not result["layout"]:
         result["layout"] = parse_layout(body)
 
-    body_type_evidence = extract_type_evidence_from_text(primary_body)
+    # Some portal layouts render field names and values in separate DOM nodes;
+    # flatten each row explicitly before applying the conservative text parser.
+    semantic_rows = []
+    for selector in ["tr", "dl", "[class*=item]", "[class*=row]", "[class*=data]"]:
+        try:
+            loc = primary_root.locator(selector)
+            for i in range(min(loc.count(), 80)):
+                row = clean_text(loc.nth(i).inner_text(timeout=700))
+                if 0 < len(row) <= 240 and re.search(r"物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別", row):
+                    semantic_rows.append(row)
+        except Exception:
+            pass
+    room_match = re.search(r"(?:部屋番号|号室)\s*[:：]?\s*(\d{3,4})", unicodedata.normalize("NFKC", primary_body))
+    if room_match:
+        result["room_number"] = room_match.group(1)
+    body_type_evidence = extract_type_evidence_from_text("\n".join([primary_body] + semantic_rows))
     if body_type_evidence:
         result["type_evidence"] = " | ".join(dict.fromkeys(
             [x for x in [result.get("type_evidence", ""), body_type_evidence] if x]
@@ -732,7 +777,7 @@ def extract_detail_structured(page, area, source=""):
             line = clean_text(line)
             if not line or len(line) > 220:
                 continue
-            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|種目)", line):
+            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目)", line):
                 m = re.search(
                     r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
                     line,
@@ -800,6 +845,8 @@ def enrich_from_detail(page, p):
             if d.get("size") is not None: p["size"]=d["size"]
             if d.get("rent") is not None: p["rent"]=d["rent"]
             p["detail_text"]=d.get("detail_text",body[:14000])[:14000]
+            if d.get("room_number"):
+                p["room_number"] = d["room_number"]
             p["property_label"]=d.get("property_label") or ""
             p["condition_text"]=d.get("condition_text", "")[:18000]
             apply_permission_conditions(p, p.get("condition_text", ""))
@@ -860,7 +907,7 @@ def filter_candidates(items, official_db):
         p["address_quality"]="OK" if has_full_address(p.get("address",'')) else ("PARTIAL" if p.get("address") else "MISSING")
         matches=[]
         if kind=="集合住宅":
-            # 8.16: apartments/condos still require a current official match,
+            # Apartments/condos still require a current official match,
             # but a full street address is no longer mandatory. An exact
             # building-name match from the listing title is sufficient.
             if not db_ready: continue
@@ -922,7 +969,7 @@ def detect_changes(candidates):
     for p in candidates:
         cid = p["id"]
         prior_urls = [x.get("url") for x in p.get("source_urls", []) if x.get("url")]
-        # Bridge 8.18 URL-based IDs to 8.19 property-level duplicate IDs. This
+        # Bridge legacy URL-based IDs to the current property-level duplicate IDs. This
         # prevents already-seen listings from being reported as new again and
         # carries forward their previous rent history without deleting state.
         legacy_ids = [f"url|{norm(u)}" for u in prior_urls if f"url|{norm(u)}" in seen or f"url|{norm(u)}" in prices]
