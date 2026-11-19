@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.20"
+VERSION = "8.21"
 
 
 def load_json(path, default):
@@ -116,6 +116,12 @@ def make_canonical_id(p):
     if address and has_full_address(p.get("address", "")):
         if room:
             return f"property|{address}|room|{room}"
+        # Apartment listings can represent different units with identical
+        # layouts and areas. Without a room number, retain URL identity rather
+        # than silently collapsing potentially different rooms.
+        if p.get("property_kind") == "集合住宅":
+            url = p.get("url", "")
+            return f"url|{norm(url)}" if url else f"fallback|{address}|{title}|{layout}|{size}"
         if title and (layout or size):
             return f"property|{address}|{title}|{layout}|{size}"
     url = p.get("url", "")
@@ -635,10 +641,6 @@ def extract_detail_structured(page, area, source=""):
         )
         if m:
             result["property_label"] = m.group(1)
-        a = extract_labeled_value(joined, ["所在地", "住所"], area)
-        if a:
-            result["address"] = a
-            result["address_source"] = "labeled_detail"
 
     # JSON-LD can provide the listing's own address and price, but never let it
     # overwrite an explicit rendered 所在地 field.
@@ -706,20 +708,34 @@ def extract_detail_structured(page, area, source=""):
     # blocks. The full body is retained separately for human-readable context.
     primary_body = body_raw
     primary_root = page.locator("body")
+    primary_is_body = True
+    # Choose the DOM container with the strongest concentration of listing
+    # fields. A generic <main> can include recommendations and navigation, so
+    # do not blindly take the first selector that happens to exist.
     main_selectors = {
-        "HOME'S": ["main", "#contents", "#content", "[class*=mainContents]", "[class*=detailContents]"],
-        "at home": ["main", "#contents", "#content", "[class*=detailContents]", "[class*=detail]"],
-        "SUUMO": ["#contents", "#js-main", "main", ".property_data", ".detail_info"],
+        "HOME'S": ["[class*=detailContents]", "[class*=detailBox]", "[class*=propertyDetail]", "#contents", "#content", "main", "[class*=detail]", "[class*=property]", "[class*=spec]"],
+        "at home": ["[class*=detailContents]", "[class*=detailBox]", "[class*=propertyDetail]", "#contents", "#content", "main", "[class*=detail]", "[class*=property]", "[class*=spec]"],
+        "SUUMO": [".property_data", ".data_table", ".detail_info", "#js-main", "#contents", "main"],
     }
+    best_score = -1
+    field_re = re.compile(r"所在地|住所|賃料|賃料\s|間取り|専有面積|建物面積|物件種別|建物種別|物件タイプ|建物タイプ|構造")
     for selector in main_selectors.get(source, []):
         try:
-            loc = page.locator(selector).first
-            if loc.count():
-                candidate = loc.inner_text(timeout=2500)
-                if len(clean_text(candidate)) >= 250:
+            matches = page.locator(selector)
+            for idx in range(min(matches.count(), 12)):
+                loc = matches.nth(idx)
+                candidate = loc.inner_text(timeout=1800)
+                cleaned = clean_text(candidate)
+                if len(cleaned) < 220 or len(cleaned) > 22000:
+                    continue
+                field_hits = len(field_re.findall(candidate))
+                recommendation_penalty = 8 if re.search(r"おすすめ物件|関連物件|この物件を見た人", candidate) else 0
+                score = field_hits * 4 - len(cleaned) / 4500 - recommendation_penalty
+                if score > best_score:
+                    best_score = score
                     primary_body = candidate
                     primary_root = loc
-                    break
+                    primary_is_body = False
         except Exception:
             pass
     for marker in ["この物件を見た人はこんな物件も見ています", "この物件を見た人", "関連物件", "おすすめ物件", "おすすめの物件", "他の物件", "似た条件の物件"]:
@@ -735,32 +751,54 @@ def extract_detail_structured(page, area, source=""):
 
     # Never page-wide scan for addresses: that is the exact bug fixed in 8.14.
     if not result["address"]:
-        result["address"] = extract_labeled_value(body_raw, ["所在地", "住所"], area)
+        result["address"] = extract_labeled_value(primary_body, ["所在地", "住所"], area)
         if result["address"]:
             result["address_source"] = "labeled_body"
+    result["detail_text"] = primary_body[:14000]
+    primary_text = clean_text(primary_body)
     if result["rent"] is None:
-        result["rent"] = parse_rent(body)
+        result["rent"] = parse_rent(primary_text)
     if result["size"] is None:
-        result["size"] = parse_area(body)
+        result["size"] = parse_area(primary_text)
     if not result["layout"]:
-        result["layout"] = parse_layout(body)
+        result["layout"] = parse_layout(primary_text)
 
     # Some portal layouts render field names and values in separate DOM nodes;
     # flatten each row explicitly before applying the conservative text parser.
     semantic_rows = []
-    for selector in ["tr", "dl", "[class*=item]", "[class*=row]", "[class*=data]"]:
+    for selector in ["tr", "dt", "dd", "th", "td", "[class*=row]", "[class*=item]", "[class*=data]"]:
         try:
             loc = primary_root.locator(selector)
-            for i in range(min(loc.count(), 80)):
+            for i in range(min(loc.count(), 100)):
                 row = clean_text(loc.nth(i).inner_text(timeout=700))
-                if 0 < len(row) <= 240 and re.search(r"物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別", row):
+                if 0 < len(row) <= 260 and re.search(r"物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別", row):
                     semantic_rows.append(row)
+        except Exception:
+            pass
+    # Support <dt>label</dt><dd>value</dd> and <th>label</th><td>value</td>
+    # layouts where the label/value pair is not represented as one text row.
+    for label_selector, value_selector in [("dt", "dd"), ("th", "td")]:
+        try:
+            labels_loc = primary_root.locator(label_selector)
+            for i in range(min(labels_loc.count(), 80)):
+                label_text = clean_text(labels_loc.nth(i).inner_text(timeout=700))
+                if re.fullmatch(r"(?:物件種別|建物種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目|種別)", label_text):
+                    value_loc = labels_loc.nth(i).locator(f"xpath=following-sibling::{value_selector}[1]")
+                    if value_loc.count():
+                        value_text = clean_text(value_loc.first.inner_text(timeout=700))
+                        if value_text and len(value_text) <= 100:
+                            semantic_rows.append(label_text + "\n" + value_text)
         except Exception:
             pass
     room_match = re.search(r"(?:部屋番号|号室)\s*[:：]?\s*(\d{3,4})", unicodedata.normalize("NFKC", primary_body))
     if room_match:
         result["room_number"] = room_match.group(1)
-    body_type_evidence = extract_type_evidence_from_text("\n".join([primary_body] + semantic_rows))
+    # Only explicit type-field rows can classify a listing. Do not scan the
+    # entire portal body: related-property cards often contain other types.
+    row_type_evidence = extract_type_evidence_from_text("\n".join(semantic_rows))
+    body_type_evidence = row_type_evidence
+    if not body_type_evidence and not primary_is_body:
+        body_type_evidence = extract_type_evidence_from_text(primary_body)
     if body_type_evidence:
         result["type_evidence"] = " | ".join(dict.fromkeys(
             [x for x in [result.get("type_evidence", ""), body_type_evidence] if x]
@@ -770,24 +808,10 @@ def extract_detail_structured(page, area, source=""):
             body_type_evidence,
         )
         if m:
-            result["property_label"] = m.group(0)
-
-    if not result["property_label"]:
-        for line in body_raw.splitlines():
-            line = clean_text(line)
-            if not line or len(line) > 220:
-                continue
-            if re.search(r"(?:物件種別|建物種別|種別|物件タイプ|建物タイプ|物件種目|物件区分|建物区分|種目)", line):
-                m = re.search(
-                    r"(一戸建て|一戸建|貸家|戸建て|戸建|貸戸建住宅|貸戸建|賃貸アパート|アパート|賃貸マンション|マンション|貸アパート|貸マンション|テラスハウス|タウンハウス|長屋|メゾネット)",
-                    line,
-                )
-                if m:
-                    result["property_label"] = m.group(1)
-                    break
+            result["property_label"] = m.group(1)
 
     structure_lines = []
-    for line in body_raw.splitlines():
+    for line in primary_body.splitlines():
         line = clean_text(line)
         if re.search(r"(?:構造|建物構造|建築|建物種別|建物タイプ)", line) and len(line) <= 220:
             structure_lines.append(line)
@@ -851,7 +875,7 @@ def enrich_from_detail(page, p):
             p["condition_text"]=d.get("condition_text", "")[:18000]
             apply_permission_conditions(p, p.get("condition_text", ""))
             kind,reason=classify_kind_from_signals(
-                p.get("property_label",""), d.get("detail_text",body), d.get("structure",""),
+                p.get("property_label",""), "", d.get("structure",""),
                 p.get("title",""), d.get("type_evidence","")
             )
             p["type_evidence"]=d.get("type_evidence","")[:1500]
@@ -1013,6 +1037,8 @@ def main():
                          "status":"unknown","raw":0,"parsed":0,"detail_attempted":0,
                          "detail_page_ok":0,"detail_validated":0,"under_rent_cap":0,
                          "detached":0,"apartment":0,"unknown":0,"detail_errors":0,
+                         "type_field_found":0,"address_found":0,"rent_found":0,
+                         "classification_reasons":{},
                          "error":"","body_chars":0,"attempts":0}
                     local_items=[]
                     for attempt in range(1,3):
@@ -1048,6 +1074,14 @@ def main():
                     rec["apartment"]=sum(1 for p in local_by_url.values() if p.get("detail_validated") and p.get("property_kind")=="集合住宅")
                     rec["unknown"]=sum(1 for p in local_by_url.values() if p.get("detail_page_ok") and not p.get("detail_validated"))
                     rec["detail_errors"]=sum(1 for p in local_by_url.values() if not p.get("detail_page_ok"))
+                    rec["type_field_found"]=sum(1 for p in local_by_url.values() if p.get("property_label") or p.get("type_evidence"))
+                    rec["address_found"]=sum(1 for p in local_by_url.values() if p.get("address"))
+                    rec["rent_found"]=sum(1 for p in local_by_url.values() if p.get("rent") is not None)
+                    reason_counts={}
+                    for p in local_by_url.values():
+                        reason=p.get("classification_reason") or "unknown_reason"
+                        reason_counts[reason]=reason_counts.get(reason,0)+1
+                    rec["classification_reasons"]=reason_counts
                     rec["seconds"]=round(time.time()-started,1)
                     diagnostics.append(rec)
         try: detail_page.close()
