@@ -1,5 +1,5 @@
 
-name: Daily Property Search 8.20
+name: Daily Property Search 8.21
 
 on:
   workflow_dispatch:
@@ -14,11 +14,9 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -41,7 +39,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f seen.json price_history.json candidate_history.json diagnostics.json official_db.json || true
+          git add seen.json price_history.json candidate_history.json diagnostics.json official_db.json
           git diff --cached --quiet && echo "No state changes" || git commit -m "update property search state"
 
       - name: Push state
