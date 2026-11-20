@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-19T12:46:39+09:00",
+  "updated_at": "2026-11-20T03:59:05+09:00",
   "records": [
     {
       "type": "住宅宿泊事業",
@@ -614,57 +614,6 @@
     {
       "type": "住宅宿泊事業",
       "category": "民泊届出",
-      "date": "2019年8月9日",
-      "ward": "中区",
-      "address": "広島市中区河原町10番16号グリーンハイツ河原町503",
-      "name": "グリーンハイツ河原町",
-      "operator": "",
-      "rooms": [
-        "503"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区河原町10番16号",
-      "building_name": "グリーンハイツ河原町",
-      "address_norm": "中区河原町10番16号",
-      "building_norm": "グリーンハイツ河原町"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2019年12月26日",
-      "ward": "中区",
-      "address": "広島市中区河原町10番16号グリーンハイツ河原町504",
-      "name": "グリーンハイツ河原町",
-      "operator": "",
-      "rooms": [
-        "504"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区河原町10番16号",
-      "building_name": "グリーンハイツ河原町",
-      "address_norm": "中区河原町10番16号",
-      "building_norm": "グリーンハイツ河原町"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2019年12月26日",
-      "ward": "中区",
-      "address": "広島市中区河原町10番16号グリーンハイツ河原町505",
-      "name": "グリーンハイツ河原町",
-      "operator": "",
-      "rooms": [
-        "505"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区河原町10番16号",
-      "building_name": "グリーンハイツ河原町",
-      "address_norm": "中区河原町10番16号",
-      "building_norm": "グリーンハイツ河原町"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
       "date": "2025年7月18日",
       "ward": "中区",
       "address": "広島市中区堺町二丁目1番2号ラポーズ堺町101",
@@ -784,6 +733,23 @@
     {
       "type": "住宅宿泊事業",
       "category": "民泊届出",
+      "date": "2026年10月14日",
+      "ward": "中区",
+      "address": "広島市中区国泰寺町一丁目5番31号国泰寺ビル402",
+      "name": "国泰寺ビル",
+      "operator": "",
+      "rooms": [
+        "402"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "中区国泰寺町一丁目5番31号",
+      "building_name": "国泰寺ビル",
+      "address_norm": "中区国泰寺町一丁目5番31号",
+      "building_norm": "国泰寺ビル"
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
       "date": "2023年3月15日",
       "ward": "中区",
       "address": "広島市中区昭和町9番11号",
@@ -810,6 +776,23 @@
       "building_name": "宝町ビル3F",
       "address_norm": "中区宝町4番31号",
       "building_norm": "宝町ビル3f"
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
+      "date": "2026年10月19日",
+      "ward": "中区",
+      "address": "広島市中区宝町9番35号Esperanza宝町301",
+      "name": "Esperanza宝町",
+      "operator": "",
+      "rooms": [
+        "301"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "中区宝町9番35号",
+      "building_name": "Esperanza宝町",
+      "address_norm": "中区宝町9番35号",
+      "building_norm": "esperanza宝町"
     },
     {
       "type": "住宅宿泊事業",
@@ -1014,6 +997,57 @@
       "building_name": "十日市ビル",
       "address_norm": "中区十日市町一丁目3番25号",
       "building_norm": "十日市ビル"
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
+      "date": "2026年10月1日",
+      "ward": "中区",
+      "address": "広島市中区十日市町一丁目3番25号十日市ビル501",
+      "name": "十日市ビル",
+      "operator": "",
+      "rooms": [
+        "501"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "中区十日市町一丁目3番25号",
+      "building_name": "十日市ビル",
+      "address_norm": "中区十日市町一丁目3番25号",
+      "building_norm": "十日市ビル"
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
+      "date": "2026年10月15日",
+      "ward": "中区",
+      "address": "広島市中区十日市町一丁目6番9号ラクセス十日市303",
+      "name": "ラクセス十日市",
+      "operator": "",
+      "rooms": [
+        "303"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "中区十日市町一丁目6番9号",
+      "building_name": "ラクセス十日市",
+      "address_norm": "中区十日市町一丁目6番9号",
+      "building_norm": "ラクセス十日市"
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
+      "date": "2026年10月15日",
+      "ward": "中区",
+      "address": "広島市中区十日市町一丁目6番9号ラクセス十日市401",
+      "name": "ラクセス十日市",
+      "operator": "",
+      "rooms": [
+        "401"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "中区十日市町一丁目6番9号",
+      "building_name": "ラクセス十日市",
+      "address_norm": "中区十日市町一丁目6番9号",
+      "building_norm": "ラクセス十日市"
     },
     {
       "type": "住宅宿泊事業",
@@ -1975,57 +2009,6 @@
     {
       "type": "住宅宿泊事業",
       "category": "民泊届出",
-      "date": "2020年5月13日",
-      "ward": "中区",
-      "address": "広島市中区袋町2番6号袋町iビル401",
-      "name": "袋町iビル",
-      "operator": "",
-      "rooms": [
-        "401"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区袋町2番6号",
-      "building_name": "袋町iビル",
-      "address_norm": "中区袋町2番6号",
-      "building_norm": "袋町iビル"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2020年5月13日",
-      "ward": "中区",
-      "address": "広島市中区袋町2番6号袋町iビル602",
-      "name": "袋町iビル",
-      "operator": "",
-      "rooms": [
-        "602"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区袋町2番6号",
-      "building_name": "袋町iビル",
-      "address_norm": "中区袋町2番6号",
-      "building_norm": "袋町iビル"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2020年5月13日",
-      "ward": "中区",
-      "address": "広島市中区袋町2番6号袋町iビル703",
-      "name": "袋町iビル",
-      "operator": "",
-      "rooms": [
-        "703"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区袋町2番6号",
-      "building_name": "袋町iビル",
-      "address_norm": "中区袋町2番6号",
-      "building_norm": "袋町iビル"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
       "date": "2018年6月21日",
       "ward": "中区",
       "address": "広島市中区富士見町2番23-304号ウイング平和大通り304",
@@ -2534,40 +2517,6 @@
     {
       "type": "住宅宿泊事業",
       "category": "民泊届出",
-      "date": "2024年11月27日",
-      "ward": "中区",
-      "address": "広島市中区三川町10番12号ラドルチェ平和大通り401",
-      "name": "ラドルチェ平和大通り",
-      "operator": "",
-      "rooms": [
-        "401"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区三川町10番12号",
-      "building_name": "ラドルチェ平和大通り",
-      "address_norm": "中区三川町10番12号",
-      "building_norm": "ラドルチェ平和大通り"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2024年11月27日",
-      "ward": "中区",
-      "address": "広島市中区三川町10番12号ラドルチェ平和大通り402",
-      "name": "ラドルチェ平和大通り",
-      "operator": "",
-      "rooms": [
-        "402"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "中区三川町10番12号",
-      "building_name": "ラドルチェ平和大通り",
-      "address_norm": "中区三川町10番12号",
-      "building_norm": "ラドルチェ平和大通り"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
       "date": "2026年9月7日",
       "ward": "中区",
       "address": "広島市中区南千田西町6番33号",
@@ -2688,6 +2637,21 @@
     {
       "type": "住宅宿泊事業",
       "category": "民泊届出",
+      "date": "2026年10月15日",
+      "ward": "東区",
+      "address": "広島市東区牛田南二丁目10番13号",
+      "name": "",
+      "operator": "",
+      "rooms": [],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "東区牛田南二丁目10番13号",
+      "building_name": "",
+      "address_norm": "東区牛田南二丁目10番13号",
+      "building_norm": ""
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
       "date": "2025年6月4日",
       "ward": "東区",
       "address": "広島市東区牛田南二丁目12番11号",
@@ -2778,40 +2742,6 @@
       "building_name": "L’sHouse尾長西",
       "address_norm": "東区尾長西一丁目6番165号",
       "building_norm": "l’shouse尾長西"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2025年3月13日",
-      "ward": "東区",
-      "address": "広島市東区上大須賀町1番6号RIVERWEST広島1007",
-      "name": "RIVERWEST広島",
-      "operator": "",
-      "rooms": [
-        "1007"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "東区上大須賀町1番6号",
-      "building_name": "RIVERWEST広島",
-      "address_norm": "東区上大須賀町1番6号",
-      "building_norm": "riverwest広島"
-    },
-    {
-      "type": "住宅宿泊事業",
-      "category": "民泊届出",
-      "date": "2024年11月7日",
-      "ward": "東区",
-      "address": "広島市東区上大須賀町1番6号RIVERWEST広島807",
-      "name": "RIVERWEST広島",
-      "operator": "",
-      "rooms": [
-        "807"
-      ],
-      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
-      "base_address": "東区上大須賀町1番6号",
-      "building_name": "RIVERWEST広島",
-      "address_norm": "東区上大須賀町1番6号",
-      "building_norm": "riverwest広島"
     },
     {
       "type": "住宅宿泊事業",
@@ -3139,6 +3069,23 @@
       "building_name": "",
       "address_norm": "南区段原山崎一丁目9番9号",
       "building_norm": ""
+    },
+    {
+      "type": "住宅宿泊事業",
+      "category": "民泊届出",
+      "date": "2026年10月14日",
+      "ward": "南区",
+      "address": "広島市南区出汐一丁目6番12号杉風館401",
+      "name": "杉風館",
+      "operator": "",
+      "rooms": [
+        "401"
+      ],
+      "source_pdf": "住宅宿泊事業法に基づく届出施設一覧",
+      "base_address": "南区出汐一丁目6番12号",
+      "building_name": "杉風館",
+      "address_norm": "南区出汐一丁目6番12号",
+      "building_norm": "杉風館"
     },
     {
       "type": "住宅宿泊事業",
@@ -11686,16 +11633,16 @@
     {
       "kind": "minpaku",
       "status": "OK",
-      "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/508/080893.pdf",
-      "records": 275,
-      "seconds": 1.5
+      "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/508/08103.pdf",
+      "records": 272,
+      "seconds": 3.2
     },
     {
       "kind": "ryokan",
       "status": "OK",
       "pdf_url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/013/507/r810.pdf",
       "records": 474,
-      "seconds": 2.1
+      "seconds": 1.9
     }
   ]
 }
