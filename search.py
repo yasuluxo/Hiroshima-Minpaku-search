@@ -11,7 +11,7 @@ from config import AREAS, MAX_RENT, REQUEST_TIMEOUT_MS, USER_AGENT, SEEN_FILE, P
 from official_db import build_official_db, match_official
 from mailer import send_report
 
-VERSION = "8.22"
+VERSION = "8.23"
 
 
 def load_json(path, default):
@@ -879,7 +879,18 @@ def enrich_from_detail(page, p):
 def dedupe(items):
     groups={}
     for p in items:
-        p["id"]=make_canonical_id(p); groups.setdefault(p["id"],[]).append(p)
+        p["id"]=make_canonical_id(p)
+        # Conservative consolidation for detached properties only. Apartments
+        # remain URL/room based so distinct units are never merged by accident.
+        address=norm(p.get("address"))
+        room_source=unicodedata.normalize("NFKC", " ".join([p.get("room_number", ""), p.get("title", ""), p.get("description", "")]))
+        room_match=re.search(r"(?<!\d)(\d{3,4})\s*号室?", room_source)
+        group_key=p["id"]
+        if p.get("property_kind")=="戸建て系" and address and has_full_address(p.get("address", "")) and not room_match:
+            # Merge portal duplicates only when rent also agrees, but keep the
+            # stable property ID rent-independent for price-history tracking.
+            group_key=f"detached-duplicate|{address}|{norm(p.get('layout'))}|{round(float(p.get('size') or 0),1)}|{p.get('rent')}"
+        groups.setdefault(group_key,[]).append(p)
     out=[]
     for cid,group in groups.items():
         # Prefer the fully detail-validated record, then the one with a complete address.
